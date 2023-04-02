@@ -7,8 +7,9 @@
 
 namespace xuna {
 
+    template<typename Edge, typename Vertice>
     class graph {
-
+        
     };
 
 } // xuna
