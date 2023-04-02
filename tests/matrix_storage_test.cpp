@@ -38,13 +38,14 @@ void insertTest(){
 
 }
 
-void getEdgeFailureTest(){
+void getEdgeTest(){
     auto matrix = matrix_storage<double, int>();
     matrix.add(5);
     matrix.add(6);
 
 
-    assertThrow<VerticeDoesNotExistsError<int>>([&matrix](){
+    assert_not_throw([&matrix](){matrix.edge(5, 6);});
+    assert_throw<VerticeDoesNotExistsError<int>>([&matrix](){
         matrix.edge(5, 8);
     });
 
@@ -61,6 +62,6 @@ int main(){
     display_matrix(matrix);
 
     insertTest();
-    getEdgeFailureTest();
+    getEdgeTest();
 
 }

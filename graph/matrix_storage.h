@@ -29,8 +29,8 @@ namespace xuna{
         std::unordered_map<Vertice, size_t> m_vertices;
         std::vector<std::vector<edge_t>> m_matrix;
 
-
-        bool isVerticePresent(Vertice &v){
+    
+        bool isVertice_present(Vertice &v)const {
             return m_vertices.find(v) != end(m_vertices);
         }
 
@@ -50,6 +50,24 @@ namespace xuna{
             }
             m_matrix.push_back(std::vector<edge_t>(std::size(m_vertices)));
         }
+
+        /**
+         *
+         * @param source the source vertice
+         * @param target the target vertice
+         * @param edge the edge value
+         */
+        void add(Vertice &&source, Vertice &&target, Edge &&edge){
+            if(!isVertice_present(source))
+                add(std::forward<Vertice>(source));
+            auto pos_a = m_vertices[source];
+            if(!isVertice_present(target))
+                add(std::forward<Vertice>(target));
+            auto pos_b = m_vertices[target];
+
+            m_matrix[pos_a][pos_b] = std::forward<Edge>(edge);
+        }
+
         /**
          *
          * @param v the vertice to remove
@@ -64,6 +82,21 @@ namespace xuna{
 
         }
         /**
+        *
+        * @param source the source vertice
+        * @param target the target vertice
+        */
+        void remove(Vertice &&source, Vertice &&target){
+            if(!isVertice_present(source))
+                throw VerticeDoesNotExistsError(source);
+            auto pos_a = m_vertices[source];
+            if(!isVertice_present(target))
+                throw VerticeDoesNotExistsError(target);
+            auto pos_b = m_vertices[target];
+
+            m_matrix[pos_a][pos_b].reset();
+        }
+        /**
          *
          * @return the adjacency matrix
          */
@@ -71,37 +104,12 @@ namespace xuna{
             return m_matrix;
         }
 
-        /**
-         *
-         * @param source the source vertice
-         * @param target the target vertice
-         * @param edge the edge value
-         */
-        void add(Vertice &&source, Vertice &&target, Edge &&edge){
-            if(!isVerticePresent(source))
-                add(std::forward<Vertice>(source));
-            auto pos_a = m_vertices[source];
-            if(!isVerticePresent(target))
-                add(std::forward<Vertice>(target));
-            auto pos_b = m_vertices[target];
-
-            m_matrix[pos_a][pos_b] = std::forward<Edge>(edge);
-        }
-
-        /**
-         *
-         * @param source the source vertice
-         * @param target the target vertice
-         */
-        void remove(Vertice &&source, Vertice &&target){
-            if(!isVerticePresent(source))
-                throw VerticeDoesNotExistsError(source);
-            auto pos_a = m_vertices[source];
-            if(!isVerticePresent(target))
-                throw VerticeDoesNotExistsError(target);
-            auto pos_b = m_vertices[target];
-
-            m_matrix[pos_a][pos_b].reset();
+        std::vector<std::reference_wrapper<Vertice>> vertices()noexcept{
+            std::vector<std::reference_wrapper<Vertice>> vect;
+            for(auto &e : m_vertices){
+                vect.push_back(e);
+            }
+            return vect;
         }
 
         /**
@@ -109,16 +117,15 @@ namespace xuna{
          * @param source the source vertice
          * @param target the target vertice
          * @return the optional containing the edge's value if it has been set
-         * @throws if one vertex isn't present in the matrix
+         * @throws if one vertice isn't present in the matrix
          */
-        edge_t edge(Vertice &&source, Vertice &&target){
-
-            if(!isVerticePresent(source))
+        edge_t edge(Vertice &&source, Vertice &&target)const{
+            if(!isVertice_present(source))
                 throw VerticeDoesNotExistsError(source);
-            auto pos_a = m_vertices[source];
-            if(!isVerticePresent(target))
+            auto pos_a = m_vertices.find(source)->second;
+            if(!isVertice_present(target))
                 throw VerticeDoesNotExistsError(target);
-            auto pos_b = m_vertices[target];
+            auto pos_b = m_vertices.find(target)->second;
 
             return m_matrix[pos_a][pos_b];
         }
