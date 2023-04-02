@@ -1,9 +1,8 @@
 #include "Maid.h"
-#include <format>
 
 using namespace std::string_literals;
 
-Maid::Maid() : Character{}, m_master{ Character{} }
+Maid::Maid() : Character{}, m_master{ std::move(Character{}) }
 {
    
 }
@@ -24,6 +23,12 @@ const Character& Maid::master() noexcept
 
 std::string Maid::introduce() const noexcept
 {
-    return std::format("Je m'appelle {:s}, j'ai {:d} ans. Je suis la servante de {:s} {:s}", 
-        m_name, m_age, m_master.gender() == Gender::WOMAN ? "madame"s : "monsieur"s, m_master.name());
+    std::string str = "Je m'appelle ";
+    str += m_name;
+    str += ", j'ai ";
+    str += std::to_string(m_age);
+    str += "ans. Je suis la servante de ";
+    str += m_master.gender() == Gender::WOMAN ? "madame"s : "monsieur"s;
+    str += m_master.name() + ".";
+    return str;
 }

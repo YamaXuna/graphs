@@ -1,5 +1,4 @@
 #include "Character.h"
-#include <print>
 #include <iostream>
 
 using namespace std::string_literals;
@@ -25,8 +24,8 @@ Character::~Character()
 
 std::string Character::introduce()const noexcept
 {
-	return std::("Je suis {:s}, j'ai {:d} ans et je suis {:s}.",
-		m_name, m_age, m_activity);
+    std::string str = "Je suis " + m_name + ", j'ai " + std::to_string(m_age) + " ans et je suis " + m_activity + ".";
+    return str;
 }
 
 std::string Character::name() const noexcept
