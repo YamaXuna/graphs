@@ -53,7 +53,7 @@ void getEdgeTest(){
 
 };
 
-void removeTest(){
+void removeVerticeTest(){
     auto matrix = matrix_storage<double, int>();
     matrix.add(5);
     matrix.add(6);
@@ -66,9 +66,26 @@ void removeTest(){
     assert(std::size(matrix.matrix()[0]) == 1);
 
 }
+
+void removeEdgeTest(){
+    auto matrix = matrix_storage<std::string , std::string>();
+    matrix.add("a");
+    matrix.add("rr");
+
+    matrix.add("a", "rr", "test");
+
+    assert_not_throw([&matrix]{
+        matrix.remove("a", "rr");
+    });
+
+    assert_throw<VerticeDoesNotExistsError<std::string>>([&matrix]{
+        matrix.remove("agh", "rr");
+    });
+}
+
 template<typename T>
-void foo(T &a)requires graph_storage<T>{
-    display_matrix(a);
+void graph_concept_test(T &a)requires graph_storage<T>{
+    //display_matrix(a);
 }
 
 int main(){
@@ -84,6 +101,8 @@ int main(){
 
     insertTest();
     getEdgeTest();
-    removeTest();
+    removeVerticeTest();
+    removeEdgeTest();
+    graph_concept_test(matrix);
 
 }

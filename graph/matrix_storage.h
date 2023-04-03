@@ -86,8 +86,8 @@ namespace xuna{
                 m_vertices.erase(it);
                 m_matrix.erase(begin(m_matrix) + it->second);
 
-                for(auto &v : m_matrix){
-                    v.erase(begin(v) + it->second);
+                for(auto &vect : m_matrix){
+                    vect.erase(begin(vect) + it->second);
                 }
             }
 
