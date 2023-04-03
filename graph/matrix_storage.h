@@ -9,6 +9,7 @@
 #include <optional>
 #include <iostream>
 #include <unordered_map>
+#include <algorithm>
 
 namespace xuna{
 
@@ -39,6 +40,10 @@ namespace xuna{
         using edge_t = Edge;
 
         matrix_storage() = default;
+        matrix_storage(matrix_storage &&m) noexcept =default;
+        matrix_storage(matrix_storage &m) noexcept =default;
+        matrix_storage<Edge, Vertice> &operator=(const matrix_storage<Edge, Vertice> &m)=default;
+        matrix_storage<Edge, Vertice> &operator=(matrix_storage<Edge, Vertice> &&m) noexcept =default;
         ~matrix_storage() = default;
 
         /**
@@ -76,12 +81,16 @@ namespace xuna{
          * @param v the vertice to remove
          */
         void remove(Vertice &&v){
+            auto it = m_vertices.find(v);
+            if(it != end(m_vertices)){
+                m_vertices.erase(it);
+                m_matrix.erase(begin(m_matrix) + it->second);
 
-            m_vertices.remove(v);
+                for(auto &v : m_matrix){
+                    v.erase(begin(v) + it->second);
+                }
+            }
 
-            std::vector<std::vector<edges>> temp(std::size(m_matrix) - 1);
-            std::swap(begin(m_matrix), std::advance(end(m_matrix), -1), begin(temp), end(temp));
-            m_matrix = temp;
 
         }
         /**
@@ -112,10 +121,10 @@ namespace xuna{
          * @return the vertices
          */
          //TODO replace it by an iterator
-        std::vector<std::reference_wrapper<Vertice>> vertices()noexcept{
-            std::vector<std::reference_wrapper<Vertice>> vect;
+        std::vector<Vertice> vertices()noexcept{
+            std::vector<Vertice> vect;
             for(auto &e : m_vertices){
-                vect.push_back(e);
+                vect.push_back(e.first);
             }
             return vect;
         }

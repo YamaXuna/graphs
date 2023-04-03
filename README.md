@@ -6,6 +6,10 @@ Graph library for learning purpose
 # Project Description
 Create a C++ template library that defines a graph data structure and implements several common graph algorithms. The library should be designed to be reusable and easily integrated into other projects.
 
+#features
+class template for graphs. Only adjacency matrix for this version.
+
+
 # Requirements
 
 The library should define a class template for a graph that can store the vertices and edges. The class should be parameterized by the type of the vertex and edge data.

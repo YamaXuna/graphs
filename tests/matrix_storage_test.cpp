@@ -52,6 +52,20 @@ void getEdgeTest(){
     });
 
 };
+
+void removeTest(){
+    auto matrix = matrix_storage<double, int>();
+    matrix.add(5);
+    matrix.add(6);
+    matrix.add(5, 6, 7);
+
+    //display_matrix(matrix);
+    matrix.remove(5);
+    //display_matrix(matrix);
+    assert(std::size(matrix.vertices()) == 1);
+    assert(std::size(matrix.matrix()[0]) == 1);
+
+}
 template<typename T>
 void foo(T &a)requires graph_storage<T>{
     display_matrix(a);
@@ -66,10 +80,10 @@ int main(){
     matrix.add("a", "rr", 2);
     matrix.add("rr", "ab", 7);
     std::cout << matrix.edge("a", "rr").value_or(0) << '\n';
-    display_matrix(matrix);
-    foo(matrix);
+    //display_matrix(matrix);
 
     insertTest();
     getEdgeTest();
+    removeTest();
 
 }

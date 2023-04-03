@@ -25,7 +25,7 @@ namespace xuna {
 
     /**
      * wrapper for any graph class, only expose primary operations
-     * @tparam Edge 
+     * @tparam Edge
      * @tparam Vertice
      */
     template<typename Edge, typename Vertice>
@@ -36,6 +36,10 @@ namespace xuna {
 
     public:
         graph()=default;
+        graph(graph &g)noexcept = default;
+        graph(graph &&g)noexcept = default;
+        graph<Edge, Vertice> &operator=(const graph<Edge, Vertice> g)=default;
+        graph<Edge, Vertice> &operator=(graph<Edge, Vertice> &&g) noexcept =default;
         ~graph()=default;
 
         /**
@@ -74,7 +78,7 @@ namespace xuna {
          * @param source the source vertice
          * @param target the target vertice
          * @return the optional containing the edge's value if it has been set
-         * @throws if one vertice isn't present in the matrix
+         * @throws if one vertice isn't present in the graph
          */
         storage_t::edge_t edge(Vertice &&source, Vertice &&target)const{
             storage.edge(std::forward<Vertice>(source), std::forward<Vertice>(target));
