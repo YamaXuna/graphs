@@ -12,9 +12,9 @@ class template for graphs. Only adjacency matrix for this version.
 
 # Requirements
 
-The library should define a class template for a graph that can store the vertices and edges. The class should be parameterized by the type of the vertex and edge data.
+X. The library should define a class template for a graph that can store the vertices and edges. The class should be parameterized by the type of the vertex and edge data.
 
-The library should include member functions for adding and removing vertices and edges, and for checking if a particular edge exists. The member functions should be defined in the header file.
+X. The library should include member functions for adding and removing vertices and edges, and for checking if a particular edge exists. The member functions should be defined in the header file.
 
 The library should implement the following algorithms as template functions:
 
