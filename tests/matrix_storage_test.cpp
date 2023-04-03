@@ -1,4 +1,3 @@
-#include "graph/matrix_storage.h"
 #include <iostream>
 #include <string>
 #include <memory>
@@ -6,6 +5,8 @@
 #include <functional>
 #include "characters/Maid.h"
 #include "test_utilyty.h"
+#include "graph/matrix_storage.h"
+#include "graph/graph.h"
 
 using namespace xuna;
 
@@ -38,6 +39,7 @@ void insertTest(){
 
 }
 
+
 void getEdgeTest(){
     auto matrix = matrix_storage<double, int>();
     matrix.add(5);
@@ -50,9 +52,14 @@ void getEdgeTest(){
     });
 
 };
+template<typename T>
+void foo(T &a)requires graph_storage<T>{
+    display_matrix(a);
+}
 
 int main(){
     auto matrix = matrix_storage<double, std::string>();
+
     matrix.add("a");
     matrix.add("rr");
 
@@ -60,6 +67,7 @@ int main(){
     matrix.add("rr", "ab", 7);
     std::cout << matrix.edge("a", "rr").value_or(0) << '\n';
     display_matrix(matrix);
+    foo(matrix);
 
     insertTest();
     getEdgeTest();

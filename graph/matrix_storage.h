@@ -24,17 +24,20 @@ namespace xuna{
      */
     template<typename Edge, typename Vertice>
     class matrix_storage {
-        using edge_t = std::optional<Edge>;
+        using edges = std::optional<Edge>;
 
         std::unordered_map<Vertice, size_t> m_vertices;
-        std::vector<std::vector<edge_t>> m_matrix;
+        std::vector<std::vector<edges>> m_matrix;
 
-    
+
         bool isVertice_present(Vertice &v)const {
             return m_vertices.find(v) != end(m_vertices);
         }
 
     public:
+        using vertice_t = Vertice;
+        using edge_t = Edge;
+
         matrix_storage() = default;
         ~matrix_storage() = default;
 
@@ -48,7 +51,7 @@ namespace xuna{
             for(auto &line : m_matrix){
                 line.resize(std::size(m_vertices));
             }
-            m_matrix.push_back(std::vector<edge_t>(std::size(m_vertices)));
+            m_matrix.push_back(std::vector<edges>(std::size(m_vertices)));
         }
 
         /**
@@ -76,7 +79,7 @@ namespace xuna{
 
             m_vertices.remove(v);
 
-            std::vector<std::vector<edge_t>> temp(std::size(m_matrix) - 1);
+            std::vector<std::vector<edges>> temp(std::size(m_matrix) - 1);
             std::swap(begin(m_matrix), std::advance(end(m_matrix), -1), begin(temp), end(temp));
             m_matrix = temp;
 
@@ -100,10 +103,15 @@ namespace xuna{
          *
          * @return the adjacency matrix
          */
-        std::vector<std::vector<edge_t>> &matrix()noexcept{
+        std::vector<std::vector<edges>> &matrix()noexcept{
             return m_matrix;
         }
 
+        /**
+         *
+         * @return the vertices
+         */
+         //TODO replace it by an iterator
         std::vector<std::reference_wrapper<Vertice>> vertices()noexcept{
             std::vector<std::reference_wrapper<Vertice>> vect;
             for(auto &e : m_vertices){
@@ -119,7 +127,7 @@ namespace xuna{
          * @return the optional containing the edge's value if it has been set
          * @throws if one vertice isn't present in the matrix
          */
-        edge_t edge(Vertice &&source, Vertice &&target)const{
+        edges edge(Vertice &&source, Vertice &&target)const{
             if(!isVertice_present(source))
                 throw VerticeDoesNotExistsError(source);
             auto pos_a = m_vertices.find(source)->second;
