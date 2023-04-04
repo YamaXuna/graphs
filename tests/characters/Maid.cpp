@@ -27,8 +27,8 @@ std::string Maid::introduce() const noexcept
     str += m_name;
     str += ", j'ai ";
     str += std::to_string(m_age);
-    str += "ans. Je suis la servante de ";
-    str += m_master.gender() == Gender::WOMAN ? "madame"s : "monsieur"s;
+    str += " ans. Je suis la servante de ";
+    str += m_master.gender() == Gender::WOMAN ? "madame "s : "monsieur "s;
     str += m_master.name() + ".";
     return str;
 }

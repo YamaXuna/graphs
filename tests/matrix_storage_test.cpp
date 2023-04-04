@@ -9,9 +9,10 @@
 #include "graph/graph.h"
 
 using namespace xuna;
+using namespace std::string_literals;
 
 template<typename Matrix>
-void display_matrix(Matrix &&matrix){
+void display_matrix(Matrix &matrix){
     for(auto &e : matrix.matrix()){
         for(auto &f : e){
             if(f)
@@ -24,13 +25,13 @@ void display_matrix(Matrix &&matrix){
     }
 }
 
-void insertTest(){
-    auto matrix = matrix_storage<double, std::string>();
+void insert_test(){
+    auto matrix = matrix_storage<std::string, double>();
     matrix.add("a");
     matrix.add("rr");
 
-    matrix.add("a", "rr", 2);
-    auto opt = matrix.edge("a", "rr");
+    matrix.add("a"s, "rr"s, 2);
+    auto opt = matrix.edge("a"s, "rr"s);
     assert(opt.has_value());
     assert(*opt == 2);
 
@@ -40,8 +41,8 @@ void insertTest(){
 }
 
 
-void getEdgeTest(){
-    auto matrix = matrix_storage<double, int>();
+void get_edge_test(){
+    auto matrix = matrix_storage<int, double>();
     matrix.add(5);
     matrix.add(6);
 
@@ -51,10 +52,10 @@ void getEdgeTest(){
         matrix.edge(5, 8);
     });
 
-};
+}
 
-void removeVerticeTest(){
-    auto matrix = matrix_storage<double, int>();
+void remove_vertice_test(){
+    auto matrix = matrix_storage<int, double>();
     matrix.add(5);
     matrix.add(6);
     matrix.add(5, 6, 7);
@@ -67,7 +68,7 @@ void removeVerticeTest(){
 
 }
 
-void removeEdgeTest(){
+void remove_edge_test(){
     auto matrix = matrix_storage<std::string , std::string>();
     matrix.add("a");
     matrix.add("rr");
@@ -85,24 +86,36 @@ void removeEdgeTest(){
 
 template<typename T>
 void graph_concept_test(T &a)requires graph_storage<T>{
-    //display_matrix(a);
+    std::ignore = a;
+}
+
+void polymorphism_test(){
+    auto matrix = matrix_storage<std::shared_ptr<Character>, std::string>();
+    std::shared_ptr<Character> c{std::make_shared<Character>("C1", 24, Character::Gender::WOMAN, "")};
+    std::shared_ptr<Maid> m{std::make_shared<Maid>("M1", 19, *c)};
+    matrix.add(c);
+    matrix.add(m);
+    matrix.add(c, m, "mistress");
+    matrix.add(m, c, "maid");
+    display_matrix(matrix);
 }
 
 int main(){
-    auto matrix = matrix_storage<double, std::string>();
+    auto matrix = matrix_storage<std::string, double>();
 
     matrix.add("a");
     matrix.add("rr");
 
     matrix.add("a", "rr", 2);
     matrix.add("rr", "ab", 7);
-    std::cout << matrix.edge("a", "rr").value_or(0) << '\n';
+    //std::cout << matrix.edge("a", "rr").value_or(0) << '\n';
     //display_matrix(matrix);
 
-    insertTest();
-    getEdgeTest();
-    removeVerticeTest();
-    removeEdgeTest();
+    insert_test();
+    get_edge_test();
+    remove_vertice_test();
+    remove_edge_test();
     graph_concept_test(matrix);
+    //polymorphism_test(); //not a unit test
 
 }

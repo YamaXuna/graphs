@@ -23,7 +23,7 @@ namespace xuna{
      * @tparam Edge
      * @tparam Vertice
      */
-    template<typename Edge, typename Vertice>
+    template<typename Vertice, typename Edge>
     class matrix_storage {
         using edges = std::optional<Edge>;
 
@@ -31,7 +31,7 @@ namespace xuna{
         std::vector<std::vector<edges>> m_matrix;
 
 
-        bool isVertice_present(Vertice &v)const {
+        bool isVertice_present(const Vertice &v)const {
             return m_vertices.find(v) != end(m_vertices);
         }
 
@@ -42,16 +42,17 @@ namespace xuna{
         matrix_storage() = default;
         matrix_storage(matrix_storage &&m) noexcept =default;
         matrix_storage(matrix_storage &m) noexcept =default;
-        matrix_storage<Edge, Vertice> &operator=(const matrix_storage<Edge, Vertice> &m)=default;
-        matrix_storage<Edge, Vertice> &operator=(matrix_storage<Edge, Vertice> &&m) noexcept =default;
+        matrix_storage<Vertice,  Edge> &operator=(const matrix_storage<Vertice,  Edge> &m)=default;
+        matrix_storage<Vertice,  Edge> &operator=(matrix_storage<Vertice,  Edge> &&m) noexcept =default;
         ~matrix_storage() = default;
 
         /**
          *
          * @param v the vertice to add
          */
-        void add(Vertice &&v){
-            m_vertices[std::forward<Vertice>(v)] = std::size(m_vertices);
+        template<typename V>
+        void add(V &&v){
+            m_vertices[std::forward<V>(v)] = std::size(m_vertices);
 
             for(auto &line : m_matrix){
                 line.resize(std::size(m_vertices));
@@ -65,12 +66,13 @@ namespace xuna{
          * @param target the target vertice
          * @param edge the edge value
          */
-        void add(Vertice &&source, Vertice &&target, Edge &&edge){
+        template<typename V, typename V2, typename E>
+        void add(V &&source, V2 &&target, E &&edge){
             if(!isVertice_present(source))
-                add(std::forward<Vertice>(source));
+                add(std::forward<V>(source));
             auto pos_a = m_vertices[source];
             if(!isVertice_present(target))
-                add(std::forward<Vertice>(target));
+                add(std::forward<V2>(target));
             auto pos_b = m_vertices[target];
 
             m_matrix[pos_a][pos_b] = std::forward<Edge>(edge);
@@ -80,7 +82,7 @@ namespace xuna{
          *
          * @param v the vertice to remove
          */
-        void remove(Vertice &&v){
+        void remove(const Vertice &v){
             auto it = m_vertices.find(v);
             if(it != end(m_vertices)){
                 m_vertices.erase(it);
@@ -98,7 +100,7 @@ namespace xuna{
         * @param source the source vertice
         * @param target the target vertice
         */
-        void remove(Vertice &&source, Vertice &&target){
+        void remove(const Vertice &source, const Vertice &target){
             if(!isVertice_present(source))
                 throw VerticeDoesNotExistsError(source);
             auto pos_a = m_vertices[source];
@@ -128,6 +130,13 @@ namespace xuna{
             }
             return vect;
         }
+        std::vector<Vertice> vertices()const noexcept{
+            std::vector<Vertice> vect;
+            for(auto &e : m_vertices){
+                vect.push_back(e.first);
+            }
+            return vect;
+        }
 
         /**
          *
@@ -136,7 +145,7 @@ namespace xuna{
          * @return the optional containing the edge's value if it has been set
          * @throws if one vertice isn't present in the matrix
          */
-        edges edge(Vertice &&source, Vertice &&target)const{
+        edges edge(const Vertice &source, const Vertice &target)const{
             if(!isVertice_present(source))
                 throw VerticeDoesNotExistsError(source);
             auto pos_a = m_vertices.find(source)->second;

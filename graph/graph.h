@@ -28,9 +28,9 @@ namespace xuna {
      * @tparam Edge
      * @tparam Vertice
      */
-    template<typename Edge, typename Vertice>
+    template<typename Vertice, typename Edge>
     class graph {
-        using storage_t = matrix_storage<Edge, Vertice>;
+        using storage_t = matrix_storage<Vertice,  Edge>;
 
         storage_t storage;
 
@@ -38,16 +38,17 @@ namespace xuna {
         graph()=default;
         graph(graph &g)noexcept = default;
         graph(graph &&g)noexcept = default;
-        graph<Edge, Vertice> &operator=(const graph<Edge, Vertice> g)=default;
-        graph<Edge, Vertice> &operator=(graph<Edge, Vertice> &&g) noexcept =default;
+        graph<Vertice,  Edge> &operator=(const graph<Vertice,  Edge> g)=default;
+        graph<Vertice,  Edge> &operator=(graph<Vertice,  Edge> &&g) noexcept =default;
         ~graph()=default;
 
         /**
          *
          * @param v the vertice to add
          */
-        void add(Vertice &&v){
-            storage.add(std::forward<Vertice>(v));
+        template<typename V>
+        void add(V &&v){
+            storage.add(std::forward<V>(v));
         }
         /**
          *
@@ -55,23 +56,26 @@ namespace xuna {
          * @param target the target vertice
          * @param edge the edge value
          */
-        void add(Vertice &&source, Vertice &&target, Edge &&edge){
-            storage.add(std::forward<Vertice>(source), std::forward<Vertice>(target), std::forward<Edge>(edge));
+        template<typename V, typename V2, typename E>
+        void add(V &&source, V2 &&target, E &&edge){
+            storage.add(std::forward<V>(source), std::forward<V2>(target), std::forward<E>(edge));
         }
         /**
          *
          * @param v the vertice to remove
          */
-        void remove(Vertice &&v){
-            storage.remove(std::forward<Vertice>(v));
+        template<typename V>
+        void remove(V &&v){
+            storage.remove(std::forward<V>(v));
         }
         /**
         *
         * @param source the source vertice
         * @param target the target vertice
         */
-        void remove(Vertice &&source, Vertice &&target){
-            storage.remove(std::forward<Vertice>(source), std::forward<Vertice>(target));
+        template<typename V, typename V2>
+        void remove(V &&source, V2 &&target){
+            storage.remove(std::forward<V>(source), std::forward<V2>(target));
         }
         /**
          *
@@ -80,8 +84,9 @@ namespace xuna {
          * @return the optional containing the edge's value if it has been set
          * @throws if one vertice isn't present in the graph
          */
-        storage_t::edge_t edge(Vertice &&source, Vertice &&target)const{
-            storage.edge(std::forward<Vertice>(source), std::forward<Vertice>(target));
+        template<typename V, typename V2>
+        storage_t::edge_t edge(V &&source, V2 &&target)const{
+            storage.edge(std::forward<V>(source), std::forward<V2>(target));
         }
         /**
          *
