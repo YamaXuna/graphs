@@ -10,13 +10,9 @@
 #include <iostream>
 #include <unordered_map>
 #include <algorithm>
+#include "common.h"
 
 namespace xuna{
-
-    template<typename Vertice>
-    struct VerticeDoesNotExistsError : public std::runtime_error{
-        explicit VerticeDoesNotExistsError(Vertice v): std::runtime_error{"Vertice isn't in the graph"}{}
-    };
 
     /**
      *
@@ -70,12 +66,12 @@ namespace xuna{
         void add(V &&source, V2 &&target, E &&edge){
             if(!isVertice_present(source))
                 add(std::forward<V>(source));
-            auto pos_a = m_vertices[source];
+            auto pos_a = m_vertices.find(source)->second;
             if(!isVertice_present(target))
                 add(std::forward<V2>(target));
-            auto pos_b = m_vertices[target];
+            auto pos_b = m_vertices.find(target)->second;
 
-            m_matrix[pos_a][pos_b] = std::forward<Edge>(edge);
+            m_matrix[pos_a][pos_b] = std::forward<E>(edge);
         }
 
         /**
@@ -103,10 +99,10 @@ namespace xuna{
         void remove(const Vertice &source, const Vertice &target){
             if(!isVertice_present(source))
                 throw VerticeDoesNotExistsError(source);
-            auto pos_a = m_vertices[source];
+            auto pos_a = m_vertices.find(source)->second;
             if(!isVertice_present(target))
                 throw VerticeDoesNotExistsError(target);
-            auto pos_b = m_vertices[target];
+            auto pos_b = m_vertices.find(target)->second;
 
             m_matrix[pos_a][pos_b].reset();
         }
@@ -145,7 +141,8 @@ namespace xuna{
          * @return the optional containing the edge's value if it has been set
          * @throws if one vertice isn't present in the matrix
          */
-        edges edge(const Vertice &source, const Vertice &target)const{
+
+        const edges &edge(const Vertice &source, const Vertice &target)const{
             if(!isVertice_present(source))
                 throw VerticeDoesNotExistsError(source);
             auto pos_a = m_vertices.find(source)->second;

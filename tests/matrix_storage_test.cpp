@@ -3,9 +3,7 @@
 #include <memory>
 #include <cassert>
 #include <functional>
-#include "characters/Maid.h"
 #include "test_utilyty.h"
-#include "graph/matrix_storage.h"
 #include "graph/graph.h"
 
 using namespace xuna;
@@ -35,7 +33,7 @@ void insert_test(){
     assert(opt.has_value());
     assert(*opt == 2);
 
-    opt = matrix.edge("rr", "a");
+    opt = matrix.edge("rr"s, "a"s);
     assert(!opt.has_value());
 
 }
@@ -85,19 +83,20 @@ void remove_edge_test(){
 }
 
 template<typename T>
-void graph_concept_test(T &a)requires graph_storage<T>{
+void graph_concept_test(T &a)requires graph<T>{
     std::ignore = a;
 }
 
-void polymorphism_test(){
-    auto matrix = matrix_storage<std::shared_ptr<Character>, std::string>();
-    std::shared_ptr<Character> c{std::make_shared<Character>("C1", 24, Character::Gender::WOMAN, "")};
-    std::shared_ptr<Maid> m{std::make_shared<Maid>("M1", 19, *c)};
-    matrix.add(c);
-    matrix.add(m);
-    matrix.add(c, m, "mistress");
-    matrix.add(m, c, "maid");
-    display_matrix(matrix);
+void non_copyable_test(){
+    //compiling test
+    auto matrix = matrix_storage<std::unique_ptr<int>, std::unique_ptr<std::string>>();
+    matrix.add(std::make_unique<int>(5));
+    matrix.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>());
+    matrix.remove(std::make_unique<int>(1));
+    matrix.remove(std::make_unique<int>(1), std::make_unique<int>(2));
+    matrix.edge(std::make_unique<int>(1), std::make_unique<int>(2));
+
+
 }
 
 int main(){
@@ -116,6 +115,6 @@ int main(){
     remove_vertice_test();
     remove_edge_test();
     graph_concept_test(matrix);
-    //polymorphism_test(); //not a unit test
+    non_copyable_test(); //not a unit test
 
 }
