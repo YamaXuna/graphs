@@ -18,6 +18,8 @@ concept graph = requires(Graph g, typename Graph::vertice_t v, typename Graph::e
     {g.edge(typename Graph::vertice_t{}, typename Graph::vertice_t{})} -> std::same_as<std::optional<typename Graph::edge_t> const &>;
     g.remove(typename Graph::vertice_t{});
     g.remove(typename Graph::vertice_t{}, typename Graph::vertice_t{});
+    {begin(g)} -> std::same_as<typename Graph::vertex_iterator>;
+    {end(g)} -> std::same_as<typename Graph::vertex_iterator>;
 
 };
 

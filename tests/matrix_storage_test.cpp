@@ -61,7 +61,7 @@ void remove_vertice_test(){
     //display_matrix(matrix);
     matrix.remove(5);
     //display_matrix(matrix);
-    assert(std::size(matrix.vertices()) == 1);
+    assert(std::distance(std::begin(matrix), std::end(matrix)) == 1);
     assert(std::size(matrix.matrix()[0]) == 1);
 
 }
@@ -116,5 +116,7 @@ int main(){
     remove_edge_test();
     graph_concept_test(matrix);
     non_copyable_test(); //not a unit test
+
+    std::cout << "success\n";
 
 }

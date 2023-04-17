@@ -28,10 +28,54 @@ namespace xuna{
 
 
         bool isVertice_present(const Vertice &v)const {
+            using std::begin, std::end;
             return m_vertices.find(v) != end(m_vertices);
         }
 
     public:
+
+        class vertex_iterator {
+            using iterator = typename std::unordered_map<Vertice, size_t>::const_iterator;
+            iterator m_it;
+
+        public:
+            using difference_type = std::ptrdiff_t;
+            using value_type = Vertice;
+            using pointer = const Vertice*;
+            using reference = const Vertice&;
+            using iterator_category = std::forward_iterator_tag;
+
+            vertex_iterator() = default;
+            explicit vertex_iterator(iterator it) : m_it(it) {}
+
+            reference operator*() const {
+                return m_it->first;
+            }
+
+            pointer operator->() const {
+                return &m_it->first;
+            }
+
+            vertex_iterator& operator++() {
+                ++m_it;
+                return *this;
+            }
+
+            vertex_iterator operator++(int) {
+                vertex_iterator temp = *this;
+                ++(*this);
+                return temp;
+            }
+
+            bool operator==(const vertex_iterator& other) const {
+                return m_it == other.m_it;
+            }
+
+            bool operator!=(const vertex_iterator& other) const {
+                return !(*this == other);
+            }
+        };
+
         using vertice_t = Vertice;
         using edge_t = Edge;
 
@@ -79,17 +123,18 @@ namespace xuna{
          * @param v the vertice to remove
          */
         void remove(const Vertice &v){
+            using std::begin, std::end;
             auto it = m_vertices.find(v);
             if(it != end(m_vertices)){
                 m_vertices.erase(it);
+                std::cout << it->second << '\n';
+                std::cout << std::size(m_matrix) << '\n';
                 m_matrix.erase(begin(m_matrix) + it->second);
 
                 for(auto &vect : m_matrix){
                     vect.erase(begin(vect) + it->second);
                 }
             }
-
-
         }
         /**
         *
@@ -110,7 +155,7 @@ namespace xuna{
          *
          * @return the adjacency matrix
          */
-        std::vector<std::vector<edges>> &matrix()noexcept{
+        const std::vector<std::vector<edges>> &matrix()const noexcept{
             return m_matrix;
         }
 
@@ -118,20 +163,12 @@ namespace xuna{
          *
          * @return the vertices
          */
-         //TODO replace it by an iterator
-        std::vector<Vertice> vertices()noexcept{
-            std::vector<Vertice> vect;
-            for(auto &e : m_vertices){
-                vect.push_back(e.first);
-            }
-            return vect;
+
+        vertex_iterator begin()const noexcept{
+            return vertex_iterator(std::begin(m_vertices));
         }
-        std::vector<Vertice> vertices()const noexcept{
-            std::vector<Vertice> vect;
-            for(auto &e : m_vertices){
-                vect.push_back(e.first);
-            }
-            return vect;
+        vertex_iterator end()const noexcept{
+            return vertex_iterator(std::end(m_vertices));
         }
 
         /**
@@ -152,6 +189,7 @@ namespace xuna{
 
             return m_matrix[pos_a][pos_b];
         }
+
 
     };
 }

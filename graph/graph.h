@@ -4,5 +4,5 @@
 
 #pragma once
 
-#include "matrix_storage.h"
-#include "graph_wrapper.h"
+#include "graph/matrix_storage.h"
+#include "graph/graph_wrapper.h"
