@@ -27,9 +27,24 @@ namespace xuna{
         std::vector<std::vector<edges>> m_matrix;
 
 
-        bool isVertice_present(const Vertice &v)const {
-            using std::begin, std::end;
-            return m_vertices.find(v) != end(m_vertices);
+        template<typename T>
+        std::enable_if_t<!is_ptr<T>::value, std::optional<size_t>>
+        find_Vertice(const T& v) const {
+            if(auto it = m_vertices.find(v); it != m_vertices.end()){
+                return std::optional(it->second);
+            }
+            return std::nullopt;
+        }
+
+        template<typename T>
+        std::enable_if_t<is_ptr<T>::value, std::optional<size_t>>
+        find_Vertice(const T& v) const {
+            for (const auto& vertex : m_vertices) {
+                if (*v == *vertex.first) {
+                    return std::optional(vertex.second);
+                }
+            }
+            return std::nullopt;
         }
 
     public:
@@ -108,12 +123,28 @@ namespace xuna{
          */
         template<typename V, typename V2, typename E>
         void add(V &&source, V2 &&target, E &&edge){
-            if(!isVertice_present(source))
+            auto v = find_Vertice(source);
+            size_t pos_a;
+            if(!v)
+            {
                 add(std::forward<V>(source));
-            auto pos_a = m_vertices.find(source)->second;
-            if(!isVertice_present(target))
+                pos_a = std::size(m_vertices);
+            }
+            else
+            {
+                pos_a = *v;
+            }
+            auto v2 = find_Vertice(target);
+            size_t pos_b;
+            if(!v2)
+            {
                 add(std::forward<V2>(target));
-            auto pos_b = m_vertices.find(target)->second;
+                pos_b = std::size(m_vertices);
+            }
+            else
+            {
+                pos_b = *v2;
+            }
 
             m_matrix[pos_a][pos_b] = std::forward<E>(edge);
         }
@@ -126,13 +157,12 @@ namespace xuna{
             using std::begin, std::end;
             auto it = m_vertices.find(v);
             if(it != end(m_vertices)){
+                size_t pos = it->second;
                 m_vertices.erase(it);
-                std::cout << it->second << '\n';
-                std::cout << std::size(m_matrix) << '\n';
-                m_matrix.erase(begin(m_matrix) + it->second);
+                m_matrix.erase(begin(m_matrix) + pos);
 
                 for(auto &vect : m_matrix){
-                    vect.erase(begin(vect) + it->second);
+                    vect.erase(begin(vect) + pos);
                 }
             }
         }
@@ -142,12 +172,14 @@ namespace xuna{
         * @param target the target vertice
         */
         void remove(const Vertice &source, const Vertice &target){
-            if(!isVertice_present(source))
+            auto v = find_Vertice(source);
+            if(!v)
                 throw VerticeDoesNotExistsError(source);
-            auto pos_a = m_vertices.find(source)->second;
-            if(!isVertice_present(target))
+            size_t pos_a = *v;
+            auto v2 = find_Vertice(target);
+            if(!v2)
                 throw VerticeDoesNotExistsError(target);
-            auto pos_b = m_vertices.find(target)->second;
+            size_t pos_b = *v2;
 
             m_matrix[pos_a][pos_b].reset();
         }
@@ -180,12 +212,14 @@ namespace xuna{
          */
 
         const edges &edge(const Vertice &source, const Vertice &target)const{
-            if(!isVertice_present(source))
+            auto v = find_Vertice(source);
+            if(!v)
                 throw VerticeDoesNotExistsError(source);
-            auto pos_a = m_vertices.find(source)->second;
-            if(!isVertice_present(target))
+            size_t pos_a = *v;
+            auto v2 = find_Vertice(target);
+            if(!v2)
                 throw VerticeDoesNotExistsError(target);
-            auto pos_b = m_vertices.find(target)->second;
+            size_t pos_b = *v2;
 
             return m_matrix[pos_a][pos_b];
         }
