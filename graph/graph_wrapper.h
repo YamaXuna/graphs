@@ -76,12 +76,22 @@ namespace xuna {
         storage_t::edge_t edge(V &&source, V2 &&target)const{
             storage.edge(std::forward<V>(source), std::forward<V2>(target));
         }
+
+        template<typename V>
+        std::vector<std::reference_wrapper<Vertice>> neighbours(V &&v)const{
+            return storage.neighbours(std::forward<V>(v));
+        }
+
         /**
          *
          * @return the vertices
          */
-        std::vector<std::reference_wrapper<Vertice>> vertices()noexcept{
-            return storage.vertices();
+        decltype(storage.begin()) begin()const noexcept{
+            return begin(storage);
+        }
+
+        decltype(storage.end()) end()const noexcept{
+            return end(storage);
         }
     };
 

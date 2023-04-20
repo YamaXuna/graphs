@@ -91,12 +91,41 @@ void non_copyable_test(){
     //compiling test
     auto matrix = matrix_storage<std::unique_ptr<int>, std::unique_ptr<std::string>>();
     matrix.add(std::make_unique<int>(5));
-    matrix.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>());
+
+    matrix.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
     matrix.remove(std::make_unique<int>(1));
+
     matrix.remove(std::make_unique<int>(1), std::make_unique<int>(2));
     matrix.edge(std::make_unique<int>(1), std::make_unique<int>(2));
 
 
+}
+
+void iterator_test(){
+    auto matrix = matrix_storage<std::string , double>();
+
+    matrix.add("a"s);
+    matrix.add("a"s, "b"s, 2.3);
+    matrix.add("c"s);
+
+    assert(std::distance(begin(matrix), end(matrix)) == 3);
+    matrix.remove("a"s);
+    assert(std::distance(begin(matrix), end(matrix)) == 2);
+    matrix.add("r"s);
+    assert(std::distance(begin(matrix), end(matrix)) == 3);
+}
+
+void get_neighbours_test(){
+    auto matrix = matrix_storage<std::string , double>();
+
+    matrix.add("a"s);
+    matrix.add("a"s, "b"s, 2.3);
+    matrix.add("c"s, "b"s, 5);
+    matrix.add("c"s, "a"s, 1.6);
+    matrix.add("a"s, "d"s, 2.7);
+    matrix.add("a"s, "a"s, 12);
+
+    assert(std::size(matrix.neighbours("a"s)) == 3);
 }
 
 int main(){
@@ -116,6 +145,8 @@ int main(){
     remove_edge_test();
     graph_concept_test(matrix);
     non_copyable_test(); //not a unit test
+    iterator_test();
+    get_neighbours_test();
 
     std::cout << "success\n";
 

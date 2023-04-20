@@ -51,29 +51,6 @@ namespace xuna{
             });
         }
 
-/*
-        template<typename T>
-        std::enable_if_t<!is_ptr<T>::value, std::optional<size_t>>
-        find_Vertice(const T& v) const {
-            if(auto it = m_vertices.find(v); it != m_vertices.end()){
-                return std::optional(it->second);
-            }
-            return std::nullopt;
-        }
-
-
-        template<typename T>
-        std::enable_if_t<is_ptr<T>::value, std::optional<size_t>>
-        find_Vertice(const T& v) const {
-            for (const auto& vertex : m_vertices) {
-                if (*v == *vertex.first) {
-                    return std::optional(vertex.second);
-                }
-            }
-            return std::nullopt;
-        }
-*/
-
     public:
 
         class vertex_iterator {
@@ -155,7 +132,7 @@ namespace xuna{
             size_t pos_a;
             if(it == end(m_vertices)){
                 add(std::forward<V>(source));
-                pos_a = std::size(m_vertices);
+                pos_a = std::size(m_vertices) - 1;
             } else{
                 pos_a = it->second;
             }
@@ -164,7 +141,7 @@ namespace xuna{
             size_t pos_b;
             if(it2 == end(m_vertices)){
                 add(std::forward<V2>(target));
-                pos_b = std::size(m_vertices);
+                pos_b = std::size(m_vertices) - 1;
             }else{
                 pos_b = it2->second;
             }
@@ -239,7 +216,6 @@ namespace xuna{
          */
 
         const edges &edge(const Vertice &source, const Vertice &target)const{
-            using  std::end;
             auto it = find_vertice(source);
             if(it == cend(m_vertices))
                 throw VerticeDoesNotExistsError(source);
@@ -252,6 +228,19 @@ namespace xuna{
             return m_matrix[pos_a][pos_b];
         }
 
+        std::vector<std::reference_wrapper<const Vertice>> neighbours(const Vertice &v)const {
+            auto it = find_vertice(v);
+            std::vector<std::reference_wrapper<const Vertice>> vect;
+            if (it == cend(m_vertices))
+                return vect;
+            for (const auto &pair: m_vertices) {
+                if (auto weight = m_matrix[it->second][pair.second]; weight != std::nullopt) {
+                    auto &vertex = pair.first;
+                    vect.emplace_back(std::cref(vertex));
+                }
+            }
+            return vect;
+        }
 
     };
 }
