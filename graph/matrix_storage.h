@@ -31,7 +31,7 @@ namespace xuna{
         using comparator_t = std::function<bool(const T&, const T&)>;
 
         template<typename T>
-        comparator_t<T> get_comparator() {
+        comparator_t<T> get_comparator() const{
             if constexpr (is_ptr<T>::value) {
                 return [](const auto& lhs, const auto& rhs) {
                     return *lhs == *rhs;
@@ -43,9 +43,15 @@ namespace xuna{
             }
         }
 
+        decltype(m_vertices.cbegin()) find_vertice(const Vertice &v)const{
+            using std::begin, std::end;
+            auto comp = get_comparator<Vertice>();
+            return std::find_if(begin(m_vertices), end(m_vertices), [comp, &v](const auto &pair){
+                return comp(v, pair.first);
+            });
+        }
 
-
-
+/*
         template<typename T>
         std::enable_if_t<!is_ptr<T>::value, std::optional<size_t>>
         find_Vertice(const T& v) const {
@@ -54,7 +60,6 @@ namespace xuna{
             }
             return std::nullopt;
         }
-
 
 
         template<typename T>
@@ -67,7 +72,7 @@ namespace xuna{
             }
             return std::nullopt;
         }
-
+*/
 
     public:
 
@@ -145,27 +150,23 @@ namespace xuna{
          */
         template<typename V, typename V2, typename E>
         void add(V &&source, V2 &&target, E &&edge){
-            auto v = find_Vertice(source);
+            using std::begin, std::end;
+            auto it = find_vertice(source);
             size_t pos_a;
-            if(!v)
-            {
+            if(it == end(m_vertices)){
                 add(std::forward<V>(source));
                 pos_a = std::size(m_vertices);
+            } else{
+                pos_a = it->second;
             }
-            else
-            {
-                pos_a = *v;
-            }
-            auto v2 = find_Vertice(target);
+
+            auto it2 = find_vertice(target);
             size_t pos_b;
-            if(!v2)
-            {
+            if(it2 == end(m_vertices)){
                 add(std::forward<V2>(target));
                 pos_b = std::size(m_vertices);
-            }
-            else
-            {
-                pos_b = *v2;
+            }else{
+                pos_b = it2->second;
             }
             //std::cout << pos_a << ' ' << pos_b << '\n';
             m_matrix[pos_a][pos_b] = std::forward<E>(edge);
@@ -179,9 +180,7 @@ namespace xuna{
             using std::begin, std::end;
             auto comp = get_comparator<Vertice>();
 
-            /*auto it = std::find_if(begin(m_vertices), end(m_vertices), [comp, &v](const auto &pair){
-                return comp(v, pair.first);
-            });*/
+            /*auto it = */
             auto it = m_vertices.find(v);
             if(it != end(m_vertices)){
                 size_t pos = it->second;
@@ -199,14 +198,15 @@ namespace xuna{
         * @param target the target vertice
         */
         void remove(const Vertice &source, const Vertice &target){
-            auto v = find_Vertice(source);
-            if(!v)
+            using std::end;
+            auto it = find_vertice(source);
+            if(it == end(m_vertices))
                 throw VerticeDoesNotExistsError(source);
-            size_t pos_a = *v;
-            auto v2 = find_Vertice(target);
-            if(!v2)
+            size_t pos_a = it->second;
+            auto it2 = find_vertice(target);
+            if(it2 == end(m_vertices))
                 throw VerticeDoesNotExistsError(target);
-            size_t pos_b = *v2;
+            size_t pos_b = it->second;
 
             m_matrix[pos_a][pos_b].reset();
         }
@@ -239,14 +239,15 @@ namespace xuna{
          */
 
         const edges &edge(const Vertice &source, const Vertice &target)const{
-            auto v = find_Vertice(source);
-            if(!v)
+            using  std::end;
+            auto it = find_vertice(source);
+            if(it == cend(m_vertices))
                 throw VerticeDoesNotExistsError(source);
-            size_t pos_a = *v;
-            auto v2 = find_Vertice(target);
-            if(!v2)
+            size_t pos_a = it->second;
+            auto it2 = find_vertice(target);
+            if(it2 == cend(m_vertices))
                 throw VerticeDoesNotExistsError(target);
-            size_t pos_b = *v2;
+            size_t pos_b = it2->second;
 
             return m_matrix[pos_a][pos_b];
         }
