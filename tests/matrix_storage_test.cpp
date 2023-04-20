@@ -5,6 +5,7 @@
 #include <functional>
 #include "test_utilyty.h"
 #include "graph/graph.h"
+#include "graph/algorithms.h"
 
 using namespace xuna;
 using namespace std::string_literals;
@@ -128,6 +129,37 @@ void get_neighbours_test(){
     assert(std::size(matrix.neighbours("a"s)) == 3);
 }
 
+void bfs_test(){
+    auto matrix = matrix_storage<std::string , double>();
+
+    matrix.add("a"s);
+    matrix.add("a"s, "b"s, 2.3);
+    matrix.add("c"s, "b"s, 5);
+    matrix.add("c"s, "a"s, 1.6);
+    matrix.add("a"s, "d"s, 2.7);
+    matrix.add("a"s, "a"s, 12);
+
+    breadth_first_search(matrix, [](const auto &v){
+        std::cout << v << ' ';
+    });
+    std::cout << '\n';
+}
+
+void dfs_test(){
+    auto matrix = matrix_storage<std::string , double>();
+
+    matrix.add("a"s);
+    matrix.add("a"s, "b"s, 2.3);
+    matrix.add("c"s, "b"s, 5);
+    matrix.add("c"s, "a"s, 1.6);
+    matrix.add("a"s, "d"s, 2.7);
+    matrix.add("a"s, "a"s, 12);
+
+    depth_first_search(matrix, [](const auto &v){
+        std::cout << v << ' ';
+    });
+}
+
 int main(){
     auto matrix = matrix_storage<std::string, double>();
 
@@ -147,6 +179,8 @@ int main(){
     non_copyable_test(); //not a unit test
     iterator_test();
     get_neighbours_test();
+    bfs_test();
+    dfs_test();
 
     std::cout << "success\n";
 
