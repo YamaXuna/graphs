@@ -28,14 +28,12 @@ namespace xuna {
     concept graph = requires(Graph g, typename Graph::vertice_t v, typename Graph::edge_t e){
         g.add(typename Graph::vertice_t{});
         g.add(typename Graph::vertice_t{}, typename Graph::vertice_t{}, typename Graph::edge_t{});
-        {
-        g.edge(typename Graph::vertice_t{}, typename Graph::vertice_t{})
-        } -> std::same_as<std::optional<typename Graph::edge_t> const &>;
+        { g.edge(typename Graph::vertice_t{}, typename Graph::vertice_t{}) } -> std::same_as<const std::optional<typename Graph::edge_t> &>;
         g.remove(typename Graph::vertice_t{});
         g.remove(typename Graph::vertice_t{}, typename Graph::vertice_t{});
         { begin(g) } -> std::same_as<typename Graph::vertex_iterator>;
         { end(g) } -> std::same_as<typename Graph::vertex_iterator>;
-
+        { g.neighbours(typename Graph::vertice_t{}) } -> std::same_as<std::vector<std::reference_wrapper<const typename Graph::vertice_t>>>;
     };
 
 /**

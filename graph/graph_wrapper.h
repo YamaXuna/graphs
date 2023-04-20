@@ -16,18 +16,24 @@ namespace xuna {
      * @tparam Edge
      * @tparam Vertice
      */
-    template<typename Vertice, typename Edge>
+    template<typename Graph>
     class graph_wrapper {
-        using storage_t = matrix_storage<Vertice,  Edge>;
+        using storage_t = Graph;
 
         storage_t storage;
 
     public:
+        using Vertice = Graph::vertice_t;
+        using Edge = Graph::edge_t;
+        using vertice_t = Graph::vertice_t;
+        using edge_t = Graph::edge_t;
+        using vertex_iterator = Graph::vertex_iterator;
+
         graph_wrapper()=default;
         graph_wrapper(graph_wrapper &g)noexcept = default;
         graph_wrapper(graph_wrapper &&g)noexcept = default;
-        graph_wrapper<Vertice,  Edge> &operator=(const graph_wrapper<Vertice,  Edge> g)=default;
-        graph_wrapper<Vertice,  Edge> &operator=(graph_wrapper<Vertice,  Edge> &&g) noexcept =default;
+        graph_wrapper<Graph> &operator=(const graph_wrapper<Graph> &g)=default;
+        graph_wrapper<Graph> &operator=(graph_wrapper<Graph> &&g) noexcept =default;
         ~graph_wrapper()=default;
 
         /**
@@ -73,12 +79,12 @@ namespace xuna {
          * @throws if one vertice isn't present in the graph_wrapper
          */
         template<typename V, typename V2>
-        storage_t::edge_t edge(V &&source, V2 &&target)const{
-            storage.edge(std::forward<V>(source), std::forward<V2>(target));
+        const std::optional<Edge> &edge(V &&source, V2 &&target)const{
+            return storage.edge(std::forward<V>(source), std::forward<V2>(target));
         }
 
         template<typename V>
-        std::vector<std::reference_wrapper<Vertice>> neighbours(V &&v)const{
+        std::vector<std::reference_wrapper<const Vertice>> neighbours(V &&v)const{
             return storage.neighbours(std::forward<V>(v));
         }
 
@@ -87,11 +93,11 @@ namespace xuna {
          * @return the vertices
          */
         decltype(storage.begin()) begin()const noexcept{
-            return begin(storage);
+            return storage.begin();
         }
 
         decltype(storage.end()) end()const noexcept{
-            return end(storage);
+            return storage.end();
         }
     };
 

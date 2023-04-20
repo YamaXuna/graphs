@@ -130,7 +130,7 @@ void get_neighbours_test(){
 }
 
 void bfs_test(){
-    auto matrix = matrix_storage<std::string , double>();
+    auto matrix = graph_wrapper<matrix_storage<std::string , double>>();
 
     matrix.add("a"s);
     matrix.add("a"s, "b"s, 2.3);
