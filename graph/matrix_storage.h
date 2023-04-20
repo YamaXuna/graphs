@@ -28,6 +28,25 @@ namespace xuna{
 
 
         template<typename T>
+        using comparator_t = std::function<bool(const T&, const T&)>;
+
+        template<typename T>
+        comparator_t<T> get_comparator() {
+            if constexpr (is_ptr<T>::value) {
+                return [](const auto& lhs, const auto& rhs) {
+                    return *lhs == *rhs;
+                };
+            } else {
+                return [](const auto& lhs, const auto& rhs) -> bool {
+                    return lhs == rhs;
+                };
+            }
+        }
+
+
+
+
+        template<typename T>
         std::enable_if_t<!is_ptr<T>::value, std::optional<size_t>>
         find_Vertice(const T& v) const {
             if(auto it = m_vertices.find(v); it != m_vertices.end()){
@@ -35,6 +54,8 @@ namespace xuna{
             }
             return std::nullopt;
         }
+
+
 
         template<typename T>
         std::enable_if_t<is_ptr<T>::value, std::optional<size_t>>
@@ -46,6 +67,7 @@ namespace xuna{
             }
             return std::nullopt;
         }
+
 
     public:
 
@@ -145,7 +167,7 @@ namespace xuna{
             {
                 pos_b = *v2;
             }
-
+            //std::cout << pos_a << ' ' << pos_b << '\n';
             m_matrix[pos_a][pos_b] = std::forward<E>(edge);
         }
 
@@ -155,6 +177,11 @@ namespace xuna{
          */
         void remove(const Vertice &v){
             using std::begin, std::end;
+            auto comp = get_comparator<Vertice>();
+
+            /*auto it = std::find_if(begin(m_vertices), end(m_vertices), [comp, &v](const auto &pair){
+                return comp(v, pair.first);
+            });*/
             auto it = m_vertices.find(v);
             if(it != end(m_vertices)){
                 size_t pos = it->second;
