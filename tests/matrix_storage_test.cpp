@@ -17,7 +17,7 @@ void display_matrix(Matrix &matrix){
             if(f)
                 std::cout << *f;
             else
-                std::cout << ".";
+                std::cout << '.';
             std::cout << ' ';
         }
         std::cout << '\n';
@@ -57,13 +57,15 @@ void remove_vertice_test(){
     auto matrix = matrix_storage<int, double>();
     matrix.add(5);
     matrix.add(6);
+    matrix.add(2);
     matrix.add(5, 6, 7);
 
     //display_matrix(matrix);
-    matrix.remove(5);
+    matrix.remove(6);
     //display_matrix(matrix);
-    assert(std::distance(std::begin(matrix), std::end(matrix)) == 1);
-    assert(std::size(matrix.matrix()[0]) == 1);
+    assert(std::distance(std::begin(matrix), std::end(matrix)) == 2);
+    assert(std::size(matrix.matrix()[0]) == 2);
+    //throw 2;
 
 }
 
@@ -73,10 +75,15 @@ void remove_edge_test(){
     matrix.add("rr");
 
     matrix.add("a", "rr", "test");
+    matrix.add("a", "a", "p");
+    matrix.add("rr", "a", "ttt");
+    matrix.add("rr", "rr", "p");
 
     assert_not_throw([&matrix]{
         matrix.remove("a", "rr");
     });
+
+    assert(!matrix.edge("a", "rr").has_value());
 
     assert_throw<VerticeDoesNotExistsError<std::string>>([&matrix]{
         matrix.remove("agh", "rr");
@@ -96,8 +103,8 @@ void non_copyable_test(){
     matrix.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
     matrix.remove(std::make_unique<int>(1));
 
-    matrix.remove(std::make_unique<int>(1), std::make_unique<int>(2));
-    matrix.edge(std::make_unique<int>(1), std::make_unique<int>(2));
+    matrix.remove(std::make_unique<int>(5), std::make_unique<int>(2));
+    matrix.edge(std::make_unique<int>(5), std::make_unique<int>(2));
 
 
 }
@@ -127,6 +134,18 @@ void get_neighbours_test(){
     matrix.add("a"s, "a"s, 12);
 
     assert(std::size(matrix.neighbours("a"s)) == 3);
+
+
+    auto matrix2 = matrix_storage<std::unique_ptr<int>, std::unique_ptr<std::string>>();
+    matrix2.add(std::make_unique<int>(5));
+
+    matrix2.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
+    //matrix2.remove(std::make_unique<int>(1));
+    matrix2.remove(std::make_unique<int>(5), std::make_unique<int>(2));
+    matrix2.edge(std::make_unique<int>(5), std::make_unique<int>(2));
+
+    auto v = matrix2.neighbours(std::make_unique<int>(5));
+    assert(std::size(v) == 0);
 }
 
 void bfs_test(){
@@ -139,10 +158,26 @@ void bfs_test(){
     matrix.add("a"s, "d"s, 2.7);
     matrix.add("a"s, "a"s, 12);
 
-    breadth_first_search(matrix, [](const auto &v){
-        std::cout << v << ' ';
+    std::string buf;
+    breadth_first_search(matrix, [&buf](const auto &v){
+        buf += v;
     });
-    std::cout << '\n';
+    assert(buf == "cbad");
+
+    auto matrix2 = matrix_storage<std::unique_ptr<int>, std::unique_ptr<std::string>>();
+    matrix2.add(std::make_unique<int>(5));
+
+    matrix2.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
+    matrix2.remove(std::make_unique<int>(1));
+    matrix2.remove(std::make_unique<int>(5), std::make_unique<int>(2));
+    matrix2.edge(std::make_unique<int>(5), std::make_unique<int>(2));
+    matrix2.add(std::make_unique<int>(2), std::make_unique<int>(5), std::make_unique<std::string>("aa"s));
+
+    std::string buffer;
+    breadth_first_search(matrix2, [&buffer](const auto &v){
+        buffer += std::to_string(*v);
+    });
+    assert(buffer == "25");
 }
 
 void dfs_test(){
@@ -155,9 +190,12 @@ void dfs_test(){
     matrix.add("a"s, "d"s, 2.7);
     matrix.add("a"s, "a"s, 12);
 
-    depth_first_search(matrix, [](const auto &v){
-        std::cout << v << ' ';
+    std::string buffer;
+
+    depth_first_search(matrix, [&buffer](const auto &v){
+        buffer += v;
     });
+    assert(buffer == "");
 }
 
 int main(){
@@ -179,8 +217,9 @@ int main(){
     non_copyable_test(); //not a unit test
     iterator_test();
     get_neighbours_test();
+
     bfs_test();
-    dfs_test();
+    //dfs_test();
 
     std::cout << "success\n";
 

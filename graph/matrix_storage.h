@@ -27,23 +27,14 @@ namespace xuna{
         std::vector<std::vector<edges>> m_matrix;
 
 
-        template<typename T>
-        using comparator_t = std::function<bool(const T&, const T&)>;
-
-        template<typename T>
-        comparator_t<T> get_comparator() const{
-            if constexpr (is_ptr<T>::value) {
-                return [](const auto& lhs, const auto& rhs) {
-                    return *lhs == *rhs;
-                };
-            } else {
-                return [](const auto& lhs, const auto& rhs) -> bool {
-                    return lhs == rhs;
-                };
-            }
+        decltype(m_vertices.cbegin()) find_vertice(const Vertice &v)const{
+            auto comp = get_comparator<Vertice>();
+            return std::find_if(cbegin(m_vertices), cend(m_vertices), [comp, &v](const auto &pair){
+                return comp(v, pair.first);
+            });
         }
 
-        decltype(m_vertices.cbegin()) find_vertice(const Vertice &v)const{
+        decltype(m_vertices.begin()) find_vertice(const Vertice &v){
             using std::begin, std::end;
             auto comp = get_comparator<Vertice>();
             return std::find_if(begin(m_vertices), end(m_vertices), [comp, &v](const auto &pair){
@@ -156,17 +147,19 @@ namespace xuna{
         void remove(const Vertice &v){
             using std::begin, std::end;
             auto comp = get_comparator<Vertice>();
-
-            /*auto it = */
-            auto it = m_vertices.find(v);
+            auto it = find_vertice(v);
             if(it != end(m_vertices)){
-                size_t pos = it->second;
+                const size_t pos = it->second;
+                for(auto &pair : m_vertices){
+                    if (pair.second != pos){
+                        auto &vect = m_matrix[pair.second];
+                        vect.erase(begin(vect) + pos);
+                    }
+                    if(pair.second > pos)
+                        --pair.second;
+                }
                 m_vertices.erase(it);
                 m_matrix.erase(begin(m_matrix) + pos);
-
-                for(auto &vect : m_matrix){
-                    vect.erase(begin(vect) + pos);
-                }
             }
         }
         /**
@@ -183,8 +176,8 @@ namespace xuna{
             auto it2 = find_vertice(target);
             if(it2 == end(m_vertices))
                 throw VerticeDoesNotExistsError(target);
-            size_t pos_b = it->second;
-
+            size_t pos_b = it2->second;
+            //std::cout << pos_a << ' ' << pos_b << '\n';
             m_matrix[pos_a][pos_b].reset();
         }
         /**
@@ -227,14 +220,20 @@ namespace xuna{
 
             return m_matrix[pos_a][pos_b];
         }
-
+        /**
+         * give the neighbours of a vertice
+         * @param v the vertice
+         * @return the vector of references to the neighbours
+         */
+         //TODO return also the weight of the eges to the neighbours
         std::vector<std::reference_wrapper<const Vertice>> neighbours(const Vertice &v)const {
             auto it = find_vertice(v);
             std::vector<std::reference_wrapper<const Vertice>> vect;
             if (it == cend(m_vertices))
-                return vect;
+                throw VerticeDoesNotExistsError(v);
             for (const auto &pair: m_vertices) {
-                if (auto weight = m_matrix[it->second][pair.second]; weight != std::nullopt) {
+                bool a = m_matrix[it->second][pair.second].has_value();
+                if (const auto &weight = m_matrix[it->second][pair.second]; weight.has_value()) {
                     auto &vertex = pair.first;
                     vect.emplace_back(std::cref(vertex));
                 }

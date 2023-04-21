@@ -44,4 +44,22 @@ namespace xuna {
     struct VerticeDoesNotExistsError : public std::runtime_error {
         explicit VerticeDoesNotExistsError(const Vertice &v) : std::runtime_error{"Vertice isn't in the graph"} {}
     };
+
+
+    template<typename T>
+    using comparator_t = std::function<bool(const T&, const T&)>;
+
+    template<typename T>
+    comparator_t<T> get_comparator(){
+        if constexpr (is_ptr<T>::value) {
+            return [](const auto& lhs, const auto& rhs) {
+                return *lhs == *rhs;
+            };
+        } else {
+            return [](const auto& lhs, const auto& rhs) -> bool {
+                return lhs == rhs;
+            };
+        }
+    }
+
 }

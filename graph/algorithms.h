@@ -17,9 +17,7 @@ namespace xuna{
         auto vertice_hash = [](const vertice_t& v) {
             return std::hash<vertice_t>()(v);
         };
-        auto vertice_equal = [](const vertice_t& v1, const vertice_t& v2) {
-            return std::equal_to<vertice_t>()(v1, v2);
-        };
+        auto vertice_equal = get_comparator<vertice_t>();
         std::unordered_set<std::reference_wrapper<const vertice_t>, decltype(vertice_hash), decltype(vertice_equal)> visited(0, vertice_hash, vertice_equal);
 
         std::queue<std::reference_wrapper<const vertice_t>> queue;
@@ -28,14 +26,15 @@ namespace xuna{
         visited.emplace(std::cref(*it));
 
         while (!queue.empty()) {
+
             const vertice_t& current = queue.front().get();
             queue.pop();
             f(current);
 
             for (const auto& neighbour : g.neighbours(current)) {
-                if (visited.find(std::cref(neighbour)) == end(visited)) {
-                    queue.push(std::cref(neighbour));
-                    visited.emplace(std::cref(neighbour));
+                if (visited.find(neighbour) == end(visited)) {
+                    queue.push(std::cref(neighbour.get()));
+                    visited.emplace(std::cref(neighbour.get()));
                 }
             }
         }
