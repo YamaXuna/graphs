@@ -17,20 +17,31 @@ namespace xuna {
     template<typename T>
     struct is_smart_pointer<std::shared_ptr<T>> : std::true_type {};
 
+    /**
+     *  check if T is a pointer or a smart pointer
+     * @tparam T
+     */
     template<typename T>
     struct is_ptr : std::bool_constant<is_smart_pointer<T>::value || std::is_pointer_v<T>> {};
+
+
+    template<typename Graph>
+    concept elementary_graph = requires(Graph g, typename Graph::vertice_t v, typename Graph::edge_t e){
+        g.add(typename Graph::vertice_t{});
+        g.add(typename Graph::vertice_t{}, typename Graph::vertice_t{}, typename Graph::edge_t{});
+        {g.edge(typename Graph::vertice_t{}, typename Graph::vertice_t{})} -> std::same_as<const std::optional<typename Graph::edge_t> &>;
+        g.remove(typename Graph::vertice_t{});
+        g.remove(typename Graph::vertice_t{}, typename Graph::vertice_t{});
+    };
 
 /**
 *
 * @tparam Graph the graph, it must have type traits for both vertices and edges
 */
     template<typename Graph>
-    concept graph = requires(Graph g, typename Graph::vertice_t v, typename Graph::edge_t e){
-        g.add(typename Graph::vertice_t{});
-        g.add(typename Graph::vertice_t{}, typename Graph::vertice_t{}, typename Graph::edge_t{});
-        { g.edge(typename Graph::vertice_t{}, typename Graph::vertice_t{}) } -> std::same_as<const std::optional<typename Graph::edge_t> &>;
-        g.remove(typename Graph::vertice_t{});
-        g.remove(typename Graph::vertice_t{}, typename Graph::vertice_t{});
+    concept graph = requires (Graph g, typename Graph::vertice_t v, typename Graph::edge_t e,
+            typename Graph::vertex_iterator) {
+        requires elementary_graph<Graph>;
         { begin(g) } -> std::same_as<typename Graph::vertex_iterator>;
         { end(g) } -> std::same_as<typename Graph::vertex_iterator>;
         { g.neighbours(typename Graph::vertice_t{}) } -> std::same_as<std::vector<std::reference_wrapper<const typename Graph::vertice_t>>>;
