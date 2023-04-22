@@ -10,7 +10,7 @@
 
 namespace xuna{
     template<typename Graph, typename F>
-    void breadth_first_search(Graph &g, F f) requires graph<Graph> {
+    void breadth_first_search(Graph &g, F f, const typename Graph::vertex_iterator &start) requires graph<Graph> {
         using vertice_t = typename Graph::vertice_t;
 
         auto vertice_hash = [](const vertice_t& v) {
@@ -20,7 +20,8 @@ namespace xuna{
         std::unordered_set<std::reference_wrapper<const vertice_t>, decltype(vertice_hash), decltype(vertice_equal)> visited(0, vertice_hash, vertice_equal);
 
         std::queue<std::reference_wrapper<const vertice_t>> queue;
-        auto it = begin(g);
+
+        auto it = start;
         queue.push(std::cref(*it));
         visited.emplace(std::cref(*it));
 
@@ -39,9 +40,14 @@ namespace xuna{
         }
     }
 
+    template<typename Graph, typename F>
+    void breadth_first_search(Graph &g, F f) requires graph<Graph> {
+        breadth_first_search(g, f, begin(g));
+    }
+
 
     template<typename Graph, typename F>
-    void depth_first_search(Graph &g, F f) requires graph<Graph> {
+    void depth_first_search(Graph &g, F f, const typename Graph::vertex_iterator &start) requires graph<Graph> {
         using vertice_t = typename Graph::vertice_t;
 
         auto vertice_hash = [](const std::reference_wrapper<const vertice_t>& v) {
@@ -53,7 +59,7 @@ namespace xuna{
         std::unordered_set<std::reference_wrapper<const vertice_t>, decltype(vertice_hash), decltype(vertice_equal)> visited(0, vertice_hash, vertice_equal);
 
         std::stack<std::reference_wrapper<const vertice_t>> stack;
-        auto it = begin(g);
+        auto it = start;
         stack.push(std::cref(*it));
         visited.emplace(std::cref(*it));
 
@@ -69,6 +75,11 @@ namespace xuna{
                 }
             }
         }
+    }
+
+    template<typename Graph, typename F>
+    void depth_first_search(Graph &g, F f) requires graph<Graph> {
+        depth_first_search(g, f, begin(g));
     }
 
 }

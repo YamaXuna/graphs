@@ -6,8 +6,11 @@
 #include "graph/graph.h"
 #include <iostream>
 
+template<template<typename, typename> typename Graph>
+inline void testor(){
+    xuna::graph_testor<Graph>{}();
+}
 
 int main(){
-
-    xuna::graph_testor<xuna::matrix_storage>{}();
+    testor<xuna::matrix_storage>();
 }
