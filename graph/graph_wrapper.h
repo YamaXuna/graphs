@@ -16,7 +16,7 @@ namespace xuna {
      * @tparam Edge
      * @tparam Vertice
      */
-    template<typename Graph>
+    template<typename Graph> requires graph<Graph>
     class graph_wrapper {
         using storage_t = Graph;
 

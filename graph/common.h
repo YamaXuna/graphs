@@ -5,6 +5,10 @@
 #pragma once
 
 #include <type_traits>
+#include <memory>
+#include <optional>
+#include <vector>
+#include <functional>
 //#include "graph_wrapper.h"
 
 namespace xuna {
@@ -24,6 +28,17 @@ namespace xuna {
     template<typename T>
     struct is_ptr : std::bool_constant<is_smart_pointer<T>::value || std::is_pointer_v<T>> {};
 
+    // Overload of begin for Graphs
+    template <typename V, typename E, template<typename, typename> class Graph>
+    auto begin(Graph<V, E>& g) -> decltype(g.begin()) {
+        return g.begin();
+    }
+
+    // Overload of begin for const Graphs
+    template <typename V, typename E, template<typename, typename> class Graph>
+    auto begin(const Graph<V, E>& g) -> decltype(g.begin()) {
+        return g.begin();
+    }
 
     template<typename Graph>
     concept elementary_graph = requires(Graph g, typename Graph::vertice_t v, typename Graph::edge_t e){
@@ -42,8 +57,8 @@ namespace xuna {
     concept graph = requires (Graph g, typename Graph::vertice_t v, typename Graph::edge_t e,
             typename Graph::vertex_iterator) {
         requires elementary_graph<Graph>;
-        { begin(g) } -> std::same_as<typename Graph::vertex_iterator>;
-        { end(g) } -> std::same_as<typename Graph::vertex_iterator>;
+        { g.begin() } -> std::same_as<typename Graph::vertex_iterator>;
+        { g.end() } -> std::same_as<typename Graph::vertex_iterator>;
         { g.neighbours(typename Graph::vertice_t{}) } -> std::same_as<std::vector<std::reference_wrapper<const typename Graph::vertice_t>>>;
     };
 

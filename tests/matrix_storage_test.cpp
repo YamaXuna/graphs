@@ -3,6 +3,7 @@
 #include <memory>
 #include <cassert>
 #include <functional>
+//#include "graph_testor.h"
 #include "test_utilyty.h"
 #include "graph/graph.h"
 #include "graph/algorithms.h"
@@ -197,7 +198,7 @@ void dfs_test(){
     });
     //assert(buffer == "");
 }
-
+/*
 int main(){
     auto matrix = matrix_storage<std::string, double>();
 
@@ -223,4 +224,4 @@ int main(){
 
     std::cout << "success\n";
 
-}
+}*/

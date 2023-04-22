@@ -6,3 +6,4 @@
 
 #include "graph/matrix_storage.h"
 #include "graph/graph_wrapper.h"
+#include "common.h"

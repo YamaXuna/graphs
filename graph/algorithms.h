@@ -9,7 +9,6 @@
 #include <unordered_set>
 
 namespace xuna{
-    //both don't works with pointers types
     template<typename Graph, typename F>
     void breadth_first_search(Graph &g, F f) requires graph<Graph> {
         using vertice_t = typename Graph::vertice_t;
