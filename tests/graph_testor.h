@@ -26,5 +26,4 @@ namespace xuna {
         }
     };
 
-
 } // xuna

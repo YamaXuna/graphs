@@ -181,6 +181,7 @@ namespace xuna{
         depth_first_search(matrix, [&buffer](const auto &v){
             buffer += v;
         }, it);
+        
         //std::cout << buffer;
         assert(buffer == "d");
     }

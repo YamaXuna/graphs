@@ -33,8 +33,8 @@ namespace xuna{
 
             for (const auto& neighbour : g.neighbours(current)) {
                 if (visited.find(neighbour) == end(visited)) {
-                    queue.push(std::cref(neighbour.get()));
-                    visited.emplace(std::cref(neighbour.get()));
+                    queue.push(neighbour);
+                    visited.emplace(neighbour);
                 }
             }
         }
@@ -70,8 +70,8 @@ namespace xuna{
 
             for (const auto& neighbour : g.neighbours(current)) {
                 if (visited.find(neighbour) == end(visited)) {
-                    stack.push(std::cref(neighbour.get()));
-                    visited.emplace(std::cref(neighbour));
+                    stack.push(neighbour);
+                    visited.emplace(neighbour);
                 }
             }
         }
