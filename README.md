@@ -18,8 +18,8 @@ X. The library should include member functions for adding and removing vertices 
 
 The library should implement the following algorithms as template functions:
 
-Breadth-first search (BFS)
-Depth-first search (DFS)
+X Breadth-first search (BFS)
+X Depth-first search (DFS)
 Dijkstra's shortest path algorithm
 Prim's minimum spanning tree algorithm
 The library should be designed to work with any type of vertex and edge data, as long as the data types provide the necessary operators and functions for the graph algorithms to work. The library should use template metaprogramming to check that the required operators and functions are defined for the vertex and edge data types.
