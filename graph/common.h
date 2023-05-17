@@ -36,8 +36,8 @@ namespace xuna {
 
     // Overload of begin for const Graphs
     template <typename V, typename E, template<typename, typename> class Graph>
-    auto begin(const Graph<V, E>& g) -> decltype(g.begin()) {
-        return g.begin();
+    auto begin(const Graph<V, E>& g) -> decltype(g.cbegin()) {
+        return g.cbegin();
     }
 
     template<typename Graph>

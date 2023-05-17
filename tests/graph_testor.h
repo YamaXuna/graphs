@@ -12,23 +12,39 @@ namespace xuna {
 
     template<typename T, typename U>
     struct factory{
-        inline T operator()(U &&value){
-            return T{std::forward<U>(value)};
+        inline T operator()(const U &value){
+            return T{value};
         }
     };
     template<typename T>
     struct factory<T, T>{
-        inline T operator()(T &&value){
+        inline T operator()(const T &value){
             return value;
         }
     };
     template<typename T>
     struct factory<std::unique_ptr<T>, T>{
-        inline std::unique_ptr<T> operator()(T &&value){
+        inline std::unique_ptr<T> operator()(const T &value){
             return std::make_unique<T>(value);
         }
     };
 
+    template <typename T, typename Enable = void>
+    struct value_extractor {
+        inline T operator()(const T& value) {
+            return value;
+        }
+    };
+    template <typename T>
+    struct value_extractor<T, std::enable_if_t<is_ptr<T>::value>> {
+        inline decltype(auto) operator()(const T& value) {
+            return *value;
+        }
+    };
+    template <typename T>
+    inline decltype(auto) v_extract(const T& value) {
+        return value_extractor<T>{}(value);
+    }
 
     using namespace std::string_literals;
     template <template <typename, typename> typename Graph>
@@ -48,12 +64,12 @@ namespace xuna {
                 matrix.add(v_factory("rr"s));
 
                 matrix.add(v_factory("a"s), v_factory("rr"s), e_factory(2));
-                auto opt = matrix.edge(v_factory("a"s), v_factory("rr"s));
+                decltype(auto) opt = matrix.edge(v_factory("a"s), v_factory("rr"s));
                 assert(opt.has_value());
-                assert(*opt == 2);
+                assert(v_extract(*opt) == 2);
 
-                opt = matrix.edge(v_factory("rr"s), v_factory("a"s));
-                assert(!opt.has_value());
+                decltype(auto) opt2 = matrix.edge(v_factory("rr"s), v_factory("a"s));
+                assert(!opt2.has_value());
             }
             void get_edge_test()requires graph<Graph<int, double>>{
                 auto matrix = Graph<int, double>();
@@ -215,11 +231,12 @@ namespace xuna {
             }
         };
 
-
     public:
 
         void operator()(){
-            test_wrapper<std::unique_ptr<std::string>, double, factory<std::unique_ptr<std::string>, std::string>>{}();
+            test_wrapper<std::unique_ptr<std::string>, std::unique_ptr<double>,
+                    factory<std::unique_ptr<std::string>, std::string>,
+                            factory<std::unique_ptr<double>, double>>{}();
         }
     };
 
