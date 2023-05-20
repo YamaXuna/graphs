@@ -28,16 +28,23 @@ namespace xuna {
             return std::make_unique<T>(value);
         }
     };
+    template<typename T>
+    struct factory<std::shared_ptr<T>, T>{
+        inline std::shared_ptr<T> operator()(const T &value){
+            return std::make_shared<T>(value);
+        }
+    };
 
-    template <typename T, typename Enable = void>
+    template <typename T>
     struct value_extractor {
         inline T operator()(const T& value) {
             return value;
         }
     };
     template <typename T>
-    struct value_extractor<T, std::enable_if_t<is_ptr<T>::value>> {
-        inline decltype(auto) operator()(const T& value) {
+    requires is_ptr<T>::value
+    struct value_extractor<T> {
+        inline decltype(auto) operator()(const T& value){
             return *value;
         }
     };
@@ -55,168 +62,176 @@ namespace xuna {
                 typename Ef = factory<Edge, Edge>>
         requires graph<Graph<Vertice, Edge>>
         struct test_wrapper{
+            using inner_vertice_t = std::remove_reference_t<decltype(v_extract(std::declval<Vertice>()))>;
+            using inner_edge_t = std::remove_reference_t<decltype(v_extract(std::declval<Edge>()))>;
             Vf v_factory = Vf{};
             Ef e_factory = Ef{};
+            std::array<inner_vertice_t , 5> m_vertices;
+            std::array<inner_edge_t , 2> m_edges;
+
+            test_wrapper()=delete;
+            test_wrapper(std::initializer_list<inner_vertice_t> vertices, std::initializer_list<inner_edge_t> edges):
+            m_vertices{}, m_edges{}{
+                int i = 0;
+                for(const auto &v : vertices){
+                    m_vertices[i] = v;
+                    ++i;
+                }
+                i = 0;
+                for(const auto &e : edges){
+                    m_edges[i] = e;
+                    ++i;
+                }
+            }
 
             void insert_test(){
-                auto matrix = Graph<Vertice, Edge>();
-                matrix.add(v_factory("a"s));
-                matrix.add(v_factory("rr"s));
+                auto graph = Graph<Vertice, Edge>();
+                graph.add(v_factory(m_vertices[0]));
+                graph.add(v_factory(m_vertices[1]));
 
-                matrix.add(v_factory("a"s), v_factory("rr"s), e_factory(2));
-                decltype(auto) opt = matrix.edge(v_factory("a"s), v_factory("rr"s));
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[1]), e_factory(m_edges[0]));
+                decltype(auto) opt = graph.edge(v_factory(m_vertices[0]), v_factory(m_vertices[1]));
                 assert(opt.has_value());
-                assert(v_extract(*opt) == 2);
+                assert(v_extract(*opt) == m_edges[0]);
 
-                decltype(auto) opt2 = matrix.edge(v_factory("rr"s), v_factory("a"s));
+                decltype(auto) opt2 = graph.edge(v_factory(m_vertices[1]), v_factory(m_vertices[0]));
                 assert(!opt2.has_value());
             }
-            void get_edge_test()requires graph<Graph<int, double>>{
-                auto matrix = Graph<int, double>();
-                matrix.add(5);
-                matrix.add(6);
+            void get_edge_test(){
+                auto graph = Graph<Vertice, Edge>();
+                graph.add(v_factory(m_vertices[0]));
+                graph.add(v_factory(m_vertices[1]));
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[1]), e_factory(m_edges[0]));
 
-                assert_not_throw([&matrix](){matrix.edge(5, 6);});
-                assert_throw<VerticeDoesNotExistsError<int>>([&matrix](){
-                    matrix.edge(5, 8);
+                assert_not_throw([this, &graph](){graph.edge(v_factory(m_vertices[0]), v_factory(m_vertices[1]));});
+                assert_throw<VerticeDoesNotExistsError<Vertice>>([this, &graph](){
+                    graph.edge(v_factory(m_vertices[2]), v_factory(m_vertices[3]));
                 });
+                decltype(auto) e = graph.edge(v_factory(m_vertices[0]), v_factory(m_vertices[1]));
+                assert(v_extract(*e) == m_edges[0]);
 
             }
             void remove_vertice_test()requires graph<Graph<int, double>>{
-                auto matrix = Graph<int, double>();
-                matrix.add(5);
-                matrix.add(6);
-                matrix.add(2);
-                matrix.add(5, 6, 7);
+                auto graph = Graph<int, double>();
+                graph.add(5);
+                graph.add(6);
+                graph.add(2);
+                graph.add(5, 6, 7);
 
-                matrix.remove(6);
-                assert(std::distance(std::begin(matrix), std::end(matrix)) == 2);
-                assert(std::size(matrix.matrix()[0]) == 2);
+                graph.remove(6);
+                assert(std::distance(std::begin(graph), std::end(graph)) == 2);
             }
 
             void remove_edge_test()requires graph<Graph<std::string , std::string>>{
-                auto matrix = Graph<std::string , std::string>();
-                matrix.add("a");
-                matrix.add("rr");
+                auto graph = Graph<std::string , std::string>();
+                graph.add("a");
+                graph.add("rr");
 
-                matrix.add("a", "rr", "test");
-                matrix.add("a", "a", "p");
-                matrix.add("rr", "a", "ttt");
-                matrix.add("rr", "rr", "p");
+                graph.add("a", "rr", "test");
+                graph.add("a", "a", "p");
+                graph.add("rr", "a", "ttt");
+                graph.add("rr", "rr", "p");
 
-                assert_not_throw([&matrix]{
-                    matrix.remove("a", "rr");
+                assert_not_throw([&graph]{
+                    graph.remove("a", "rr");
                 });
 
-                assert(!matrix.edge("a", "rr").has_value());
+                assert(!graph.edge("a", "rr").has_value());
 
-                assert_throw<VerticeDoesNotExistsError<std::string>>([&matrix]{
-                    matrix.remove("agh", "rr");
+                assert_throw<VerticeDoesNotExistsError<std::string>>([&graph]{
+                    graph.remove("agh", "rr");
                 });
-            }
-
-            void non_copyable_test()requires graph<Graph<std::unique_ptr<int>, std::unique_ptr<std::string>>>{
-                //compiling test
-                auto matrix = Graph<std::unique_ptr<int>, std::unique_ptr<std::string>>();
-                matrix.add(std::make_unique<int>(5));
-
-                matrix.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
-                matrix.remove(std::make_unique<int>(1));
-
-                matrix.remove(std::make_unique<int>(5), std::make_unique<int>(2));
-                matrix.edge(std::make_unique<int>(5), std::make_unique<int>(2));
             }
 
             void iterator_test()requires graph<Graph<std::string , double>>{
-                auto matrix = Graph<std::string , double>();
+                auto graph = Graph<std::string , double>();
 
-                matrix.add("a"s);
-                matrix.add("a"s, "b"s, 2.3);
-                matrix.add("c"s);
+                graph.add("a"s);
+                graph.add("a"s, "b"s, 2.3);
+                graph.add("c"s);
 
-                assert(std::distance(begin(matrix), end(matrix)) == 3);
-                matrix.remove("a"s);
-                assert(std::distance(begin(matrix), end(matrix)) == 2);
-                matrix.add("r"s);
-                assert(std::distance(begin(matrix), end(matrix)) == 3);
+                assert(std::distance(begin(graph), end(graph)) == 3);
+                graph.remove("a"s);
+                assert(std::distance(begin(graph), end(graph)) == 2);
+                graph.add("r"s);
+                assert(std::distance(begin(graph), end(graph)) == 3);
             }
 
             void get_neighbours_test()requires graph<Graph<std::string , double>>{
-                auto matrix = Graph<std::string , double>();
+                auto graph = Graph<std::string , double>();
 
-                matrix.add("a"s);
-                matrix.add("a"s, "b"s, 2.3);
-                matrix.add("c"s, "b"s, 5);
-                matrix.add("c"s, "a"s, 1.6);
-                matrix.add("a"s, "d"s, 2.7);
-                matrix.add("a"s, "a"s, 12);
+                graph.add("a"s);
+                graph.add("a"s, "b"s, 2.3);
+                graph.add("c"s, "b"s, 5);
+                graph.add("c"s, "a"s, 1.6);
+                graph.add("a"s, "d"s, 2.7);
+                graph.add("a"s, "a"s, 12);
 
-                assert(std::size(matrix.neighbours("a"s)) == 3);
+                assert(std::size(graph.neighbours("a"s)) == 3);
 
 
-                auto matrix2 = Graph<std::unique_ptr<int>, std::unique_ptr<std::string>>();
-                matrix2.add(std::make_unique<int>(5));
+                auto graph2 = Graph<std::unique_ptr<int>, std::unique_ptr<std::string>>();
+                graph2.add(std::make_unique<int>(5));
 
-                matrix2.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
-                //matrix2.remove(std::make_unique<int>(1));
-                matrix2.remove(std::make_unique<int>(5), std::make_unique<int>(2));
-                matrix2.edge(std::make_unique<int>(5), std::make_unique<int>(2));
+                graph2.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
+                //graph2.remove(std::make_unique<int>(1));
+                graph2.remove(std::make_unique<int>(5), std::make_unique<int>(2));
+                graph2.edge(std::make_unique<int>(5), std::make_unique<int>(2));
 
-                auto v = matrix2.neighbours(std::make_unique<int>(5));
+                auto v = graph2.neighbours(std::make_unique<int>(5));
                 assert(std::size(v) == 0);
             }
             void bfs_test()requires graph<Graph<std::string , double>>{
-                auto matrix = Graph<std::string , double>();
+                auto graph = Graph<std::string , double>();
 
-                matrix.add("a"s);
-                matrix.add("a"s, "b"s, 2.3);
-                matrix.add("c"s, "b"s, 5);
-                matrix.add("c"s, "a"s, 1.6);
-                matrix.add("a"s, "d"s, 2.7);
-                matrix.add("a"s, "a"s, 12);
+                graph.add("a"s);
+                graph.add("a"s, "b"s, 2.3);
+                graph.add("c"s, "b"s, 5);
+                graph.add("c"s, "a"s, 1.6);
+                graph.add("a"s, "d"s, 2.7);
+                graph.add("a"s, "a"s, 12);
 
                 std::string buf;
-                breadth_first_search(matrix, [&buf](const auto &v){
+                breadth_first_search(graph, [&buf](const auto &v){
                     buf += v;
                 });
                 assert(buf == "cbad");
 
-                auto matrix2 = Graph<std::unique_ptr<int>, std::unique_ptr<std::string>>();
-                matrix2.add(std::make_unique<int>(5));
+                auto graph2 = Graph<std::unique_ptr<int>, std::unique_ptr<std::string>>();
+                graph2.add(std::make_unique<int>(5));
 
-                matrix2.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
-                matrix2.remove(std::make_unique<int>(1));
-                matrix2.remove(std::make_unique<int>(5), std::make_unique<int>(2));
-                matrix2.edge(std::make_unique<int>(5), std::make_unique<int>(2));
-                matrix2.add(std::make_unique<int>(2), std::make_unique<int>(5), std::make_unique<std::string>("aa"s));
+                graph2.add(std::make_unique<int>(1), std::make_unique<int>(2), std::make_unique<std::string>("okk"s));
+                graph2.remove(std::make_unique<int>(1));
+                graph2.remove(std::make_unique<int>(5), std::make_unique<int>(2));
+                graph2.edge(std::make_unique<int>(5), std::make_unique<int>(2));
+                graph2.add(std::make_unique<int>(2), std::make_unique<int>(5), std::make_unique<std::string>("aa"s));
 
                 std::string buffer;
-                breadth_first_search(matrix2, [&buffer](const auto &v){
+                breadth_first_search(graph2, [&buffer](const auto &v){
                     buffer += std::to_string(*v);
                 });
                 assert(buffer == "25");
             }
             void dfs_test()requires graph<Graph<std::string , double>>{
-                auto matrix = Graph<std::string , double>();
+                auto graph = Graph<std::string , double>();
 
-                matrix.add("a"s);
-                matrix.add("a"s, "b"s, 2.3);
-                matrix.add("c"s, "b"s, 5);
-                matrix.add("c"s, "a"s, 1.6);
-                matrix.add("a"s, "d"s, 2.7);
-                matrix.add("a"s, "a"s, 12);
+                graph.add("a"s);
+                graph.add("a"s, "b"s, 2.3);
+                graph.add("c"s, "b"s, 5);
+                graph.add("c"s, "a"s, 1.6);
+                graph.add("a"s, "d"s, 2.7);
+                graph.add("a"s, "a"s, 12);
 
                 std::string buffer;
-                auto it = std::find_if(begin(matrix), end(matrix), [](const auto &v){
+                auto it = std::find_if(begin(graph), end(graph), [](const auto &v){
                     return get_comparator<std::string>()(v, "d"s);
                 });
-                depth_first_search(matrix, [&buffer](const auto &v){
+                depth_first_search(graph, [&buffer](const auto &v){
                     buffer += v;
                 }, it);
-
-                //std::cout << buffer;
                 assert(buffer == "d");
             }
+
             void operator()() {
                 insert_test();
                 get_edge_test();
@@ -234,9 +249,15 @@ namespace xuna {
     public:
 
         void operator()(){
+            test_wrapper<std::string, double>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2}}();
+
             test_wrapper<std::unique_ptr<std::string>, std::unique_ptr<double>,
                     factory<std::unique_ptr<std::string>, std::string>,
-                            factory<std::unique_ptr<double>, double>>{}();
+                            factory<std::unique_ptr<double>, double>>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2}}();
+            test_wrapper<std::shared_ptr<std::string>, std::shared_ptr<double>,
+                    factory<std::shared_ptr<std::string>, std::string>,
+                    factory<std::shared_ptr<double>, double>>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2}}();
+
         }
     };
 
