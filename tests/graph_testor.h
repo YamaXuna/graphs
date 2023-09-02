@@ -67,11 +67,13 @@ namespace xuna {
             Vf v_factory = Vf{};
             Ef e_factory = Ef{};
             std::array<inner_vertice_t , 5> m_vertices;
-            std::array<inner_edge_t , 2> m_edges;
+            std::array<inner_edge_t , 4> m_edges;
 
             test_wrapper()=delete;
             test_wrapper(std::initializer_list<inner_vertice_t> vertices, std::initializer_list<inner_edge_t> edges):
             m_vertices{}, m_edges{}{
+                assert(vertices.size() >= 5);
+                assert(edges.size() >= 4);
                 int i = 0;
                 for(const auto &v : vertices){
                     m_vertices[i] = v;
@@ -111,64 +113,61 @@ namespace xuna {
                 assert(v_extract(*e) == m_edges[0]);
 
             }
-            void remove_vertice_test()requires graph<Graph<int, double>>{
-                auto graph = Graph<int, double>();
-                graph.add(5);
-                graph.add(6);
-                graph.add(2);
-                graph.add(5, 6, 7);
+            void remove_vertice_test(){
+                auto graph = Graph<Vertice, Edge>();
+                graph.add(v_factory(m_vertices[0]));
+                graph.add(v_factory(m_vertices[1]));
+                graph.add(v_factory(m_vertices[2]));
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[1]), e_factory(m_edges[0]));
+                graph.remove(v_factory(m_vertices[1]));
 
-                graph.remove(6);
                 assert(std::distance(std::begin(graph), std::end(graph)) == 2);
             }
 
-            void remove_edge_test()requires graph<Graph<std::string , std::string>>{
-                auto graph = Graph<std::string , std::string>();
-                graph.add("a");
-                graph.add("rr");
+            void remove_edge_test(){
+                auto graph = Graph<Vertice, Edge>();
+                graph.add(v_factory(m_vertices[0]));
+                graph.add(v_factory(m_vertices[1]));
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[1]), e_factory(m_edges[0]));
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[0]), e_factory(m_edges[1]));
+                graph.add(v_factory(m_vertices[1]), v_factory(m_vertices[0]), e_factory(m_edges[2]));
+                graph.add(v_factory(m_vertices[1]), v_factory(m_vertices[1]), e_factory(m_edges[3]));
 
-                graph.add("a", "rr", "test");
-                graph.add("a", "a", "p");
-                graph.add("rr", "a", "ttt");
-                graph.add("rr", "rr", "p");
-
-                assert_not_throw([&graph]{
-                    graph.remove("a", "rr");
+                assert_not_throw([this, &graph]{
+                    graph.remove(v_factory(m_vertices[0]), v_factory(m_vertices[1]));
                 });
 
-                assert(!graph.edge("a", "rr").has_value());
+                assert(!graph.edge(v_factory(m_vertices[0]), v_factory(m_vertices[1])).has_value());
 
-                assert_throw<VerticeDoesNotExistsError<std::string>>([&graph]{
-                    graph.remove("agh", "rr");
+                assert_throw<VerticeDoesNotExistsError<Vertice>>([this, &graph]{
+                    graph.remove(v_factory(m_vertices[2]), v_factory(m_vertices[1]));
                 });
             }
 
-            void iterator_test()requires graph<Graph<std::string , double>>{
-                auto graph = Graph<std::string , double>();
+            void iterator_test(){
+                auto graph = Graph<Vertice, Edge>();
+                graph.add(v_factory(m_vertices[0]));
+                graph.add(v_factory(m_vertices[1]));
 
-                graph.add("a"s);
-                graph.add("a"s, "b"s, 2.3);
-                graph.add("c"s);
+                graph.add(v_factory(m_vertices[2]), v_factory(m_vertices[1]), e_factory(m_edges[0]));
 
                 assert(std::distance(begin(graph), end(graph)) == 3);
-                graph.remove("a"s);
+                graph.remove(v_factory(m_vertices[0]));
                 assert(std::distance(begin(graph), end(graph)) == 2);
-                graph.add("r"s);
+                graph.add(v_factory(m_vertices[3]));
                 assert(std::distance(begin(graph), end(graph)) == 3);
             }
 
-            void get_neighbours_test()requires graph<Graph<std::string , double>>{
-                auto graph = Graph<std::string , double>();
+            void get_neighbours_test(){
+                auto graph = Graph<Vertice, Edge>();
 
-                graph.add("a"s);
-                graph.add("a"s, "b"s, 2.3);
-                graph.add("c"s, "b"s, 5);
-                graph.add("c"s, "a"s, 1.6);
-                graph.add("a"s, "d"s, 2.7);
-                graph.add("a"s, "a"s, 12);
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[1]), e_factory(m_edges[0]));
+                graph.add(v_factory(m_vertices[2]), v_factory(m_vertices[1]), e_factory(m_edges[1]));
+                graph.add(v_factory(m_vertices[2]), v_factory(m_vertices[0]), e_factory(m_edges[2]));
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[2]), e_factory(m_edges[3]));
+                graph.add(v_factory(m_vertices[0]), v_factory(m_vertices[0]), e_factory(m_edges[4]));
 
-                assert(std::size(graph.neighbours("a"s)) == 3);
-
+                assert(std::size(graph.neighbours(v_factory(m_vertices[0]))) == 3);
 
                 auto graph2 = Graph<std::unique_ptr<int>, std::unique_ptr<std::string>>();
                 graph2.add(std::make_unique<int>(5));
@@ -181,6 +180,7 @@ namespace xuna {
                 auto v = graph2.neighbours(std::make_unique<int>(5));
                 assert(std::size(v) == 0);
             }
+            // nothing to do her because it depend on edge type and args
             void bfs_test()requires graph<Graph<std::string , double>>{
                 auto graph = Graph<std::string , double>();
 
@@ -249,15 +249,14 @@ namespace xuna {
     public:
 
         void operator()(){
-            test_wrapper<std::string, double>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2}}();
+            test_wrapper<std::string, double>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2, 75, 99, 128}}();
 
             test_wrapper<std::unique_ptr<std::string>, std::unique_ptr<double>,
                     factory<std::unique_ptr<std::string>, std::string>,
-                            factory<std::unique_ptr<double>, double>>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2}}();
+                            factory<std::unique_ptr<double>, double>>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2, 75, 99, 128}}();
             test_wrapper<std::shared_ptr<std::string>, std::shared_ptr<double>,
                     factory<std::shared_ptr<std::string>, std::string>,
-                    factory<std::shared_ptr<double>, double>>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2}}();
-
+                    factory<std::shared_ptr<double>, double>>{{"a"s, "b"s, "c"s, "d"s, "e"s}, {1, 2, 75, 99, 128}}();
         }
     };
 

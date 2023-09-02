@@ -31,10 +31,10 @@ namespace xuna{
             queue.pop();
             f(current);
 
-            for (const auto& neighbour : g.neighbours(current)) {
-                if (visited.find(neighbour) == end(visited)) {
-                    queue.push(neighbour);
-                    visited.emplace(neighbour);
+            for (const auto& pair : g.neighbours(current)) {
+                if (visited.find(pair.first) == end(visited)) {
+                    queue.push(pair.first);
+                    visited.emplace(pair.first);
                 }
             }
         }
@@ -68,10 +68,10 @@ namespace xuna{
             stack.pop();
             f(current);
 
-            for (const auto& neighbour : g.neighbours(current)) {
-                if (visited.find(neighbour) == end(visited)) {
-                    stack.push(neighbour);
-                    visited.emplace(neighbour);
+            for (const auto& pair : g.neighbours(current)) {
+                if (visited.find(pair.first) == end(visited)) {
+                    stack.push(pair.first);
+                    visited.emplace(pair.first);
                 }
             }
         }

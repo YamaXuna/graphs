@@ -86,6 +86,7 @@ namespace xuna{
             }
         };
 
+
         using vertice_t = Vertice;
         using edge_t = Edge;
 
@@ -196,7 +197,7 @@ namespace xuna{
         vertex_iterator begin()const noexcept{
             return vertex_iterator(std::begin(m_vertices));
         }
-        vertex_iterator end()const noexcept{
+        vertex_iterator end() noexcept{
             return vertex_iterator(std::end(m_vertices));
         }
 
@@ -226,22 +227,34 @@ namespace xuna{
          * @return the vector of references to the neighbours
          */
          //TODO return also the weight of the eges to the neighbours
-        std::vector<std::reference_wrapper<const Vertice>> neighbours(const Vertice &v)const {
+        std::vector<std::pair<
+                std::reference_wrapper<const Vertice>, std::reference_wrapper<const Edge>
+                >> neighbours(const Vertice &v)const {
             auto it = find_vertice(v);
-            std::vector<std::reference_wrapper<const Vertice>> vect;
+             std::vector<std::pair<
+                     std::reference_wrapper<const Vertice>, std::reference_wrapper<const Edge>
+             >> vect;
             if (it == cend(m_vertices))
                 throw VerticeDoesNotExistsError(v);
             for (const auto &pair: m_vertices) {
-                bool a = m_matrix[it->second][pair.second].has_value();
                 if (const auto &weight = m_matrix[it->second][pair.second]; weight.has_value()) {
                     auto &vertex = pair.first;
-                    vect.emplace_back(std::cref(vertex));
+                    vect.emplace_back(std::cref(vertex), std::cref(*m_matrix[it->second][pair.second]));
                 }
             }
             return vect;
         }
 
     };
+
+    template<typename Vertice, typename Edge>
+    matrix_storage<Vertice, Edge>::vertex_iterator begin(const matrix_storage<Vertice, Edge> &graph) noexcept{
+        return graph.begin();
+    }
+    template<typename Vertice, typename Edge>
+    matrix_storage<Vertice, Edge>::vertex_iterator end(const matrix_storage<Vertice, Edge> &graph) noexcept{
+        return graph.end();
+    }
 }
 
 

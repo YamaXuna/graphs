@@ -28,6 +28,12 @@ namespace xuna {
     template<typename T>
     struct is_ptr : std::bool_constant<is_smart_pointer<T>::value || std::is_pointer_v<T>> {};
 
+    /**
+     * helper
+     */
+    template<typename T>
+    using is_ptr_v = is_ptr<T>::value;
+
     // Overload of begin for Graphs
     template <typename V, typename E, template<typename, typename> class Graph>
     auto begin(Graph<V, E>& g) -> decltype(g.begin()) {
@@ -59,7 +65,11 @@ namespace xuna {
         requires elementary_graph<Graph>;
         { g.begin() } -> std::same_as<typename Graph::vertex_iterator>;
         { g.end() } -> std::same_as<typename Graph::vertex_iterator>;
-        { g.neighbours(typename Graph::vertice_t{}) } -> std::same_as<std::vector<std::reference_wrapper<const typename Graph::vertice_t>>>;
+        { g.neighbours(typename Graph::vertice_t{}) } ->
+            std::same_as<std::vector<std::pair<
+            std::reference_wrapper<const typename Graph::vertice_t>, std::reference_wrapper<const typename Graph::edge_t>
+            >
+            >>;
     };
 
 /**

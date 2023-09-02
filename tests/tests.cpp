@@ -4,6 +4,7 @@
 
 #include "graph_testor.h"
 #include "graph/graph.h"
+#include "graph/algorithms.h"
 #include <iostream>
 
 template<template<typename, typename> typename Graph>

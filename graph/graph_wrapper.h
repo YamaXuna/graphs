@@ -20,7 +20,7 @@ namespace xuna {
     class graph_wrapper {
         using storage_t = Graph;
 
-        storage_t storage;
+        storage_t m_storage;
 
     public:
         using Vertice = Graph::vertice_t;
@@ -42,7 +42,7 @@ namespace xuna {
          */
         template<typename V>
         void add(V &&v){
-            storage.add(std::forward<V>(v));
+            m_storage.add(std::forward<V>(v));
         }
         /**
          *
@@ -52,7 +52,7 @@ namespace xuna {
          */
         template<typename V, typename V2, typename E>
         void add(V &&source, V2 &&target, E &&edge){
-            storage.add(std::forward<V>(source), std::forward<V2>(target), std::forward<E>(edge));
+            m_storage.add(std::forward<V>(source), std::forward<V2>(target), std::forward<E>(edge));
         }
         /**
          *
@@ -60,7 +60,7 @@ namespace xuna {
          */
         template<typename V>
         void remove(V &&v){
-            storage.remove(std::forward<V>(v));
+            m_storage.remove(std::forward<V>(v));
         }
         /**
         *
@@ -69,7 +69,7 @@ namespace xuna {
         */
         template<typename V, typename V2>
         void remove(V &&source, V2 &&target){
-            storage.remove(std::forward<V>(source), std::forward<V2>(target));
+            m_storage.remove(std::forward<V>(source), std::forward<V2>(target));
         }
         /**
          *
@@ -80,24 +80,24 @@ namespace xuna {
          */
         template<typename V, typename V2>
         const std::optional<Edge> &edge(V &&source, V2 &&target)const{
-            return storage.edge(std::forward<V>(source), std::forward<V2>(target));
+            return m_storage.edge(std::forward<V>(source), std::forward<V2>(target));
         }
 
         template<typename V>
         std::vector<std::reference_wrapper<const Vertice>> neighbours(V &&v)const{
-            return storage.neighbours(std::forward<V>(v));
+            return m_storage.neighbours(std::forward<V>(v));
         }
 
         /**
          *
          * @return the vertices
          */
-        decltype(storage.begin()) begin()const noexcept{
-            return storage.begin();
+        decltype(m_storage.begin()) begin()const noexcept{
+            return m_storage.begin();
         }
 
-        decltype(storage.end()) end()const noexcept{
-            return storage.end();
+        decltype(m_storage.end()) end()const noexcept{
+            return m_storage.end();
         }
     };
 
