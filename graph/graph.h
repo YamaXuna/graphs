@@ -5,5 +5,6 @@
 #pragma once
 
 #include "graph/matrix_storage.h"
+#include "graph/adjacency.h"
 #include "graph/graph_wrapper.h"
 #include "algorithms.h"

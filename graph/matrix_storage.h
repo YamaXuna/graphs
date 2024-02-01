@@ -26,7 +26,6 @@ namespace xuna{
         std::unordered_map<Vertice, size_t> m_vertices;
         std::vector<std::vector<edges>> m_matrix;
 
-
         decltype(m_vertices.cbegin()) find_vertice(const Vertice &v)const{
             auto comp = get_comparator<Vertice>();
             return std::find_if(cbegin(m_vertices), cend(m_vertices), [comp, &v](const auto &pair){
@@ -82,7 +81,7 @@ namespace xuna{
             }
 
             bool operator!=(const vertex_iterator& other) const {
-                return !(*this == other);
+                return *this != other;
             }
         };
 
@@ -96,6 +95,8 @@ namespace xuna{
         matrix_storage<Vertice,  Edge> &operator=(const matrix_storage<Vertice,  Edge> &m)=default;
         matrix_storage<Vertice,  Edge> &operator=(matrix_storage<Vertice,  Edge> &&m) noexcept =default;
         ~matrix_storage() = default;
+
+        //friend matrix_storage<Vertice, Edge>::vertex_iterator find_vertice(const matrix_storage<Vertice, Edge> &graph);
 
         /**
          *
@@ -224,9 +225,8 @@ namespace xuna{
         /**
          * give the neighbours of a vertice
          * @param v the vertice
-         * @return the vector of references to the neighbours
+         * @return the vector of references to the neighbours with the weights
          */
-         //TODO return also the weight of the eges to the neighbours
         std::vector<std::pair<
                 std::reference_wrapper<const Vertice>, std::reference_wrapper<const Edge>
                 >> neighbours(const Vertice &v)const {
@@ -255,6 +255,16 @@ namespace xuna{
     matrix_storage<Vertice, Edge>::vertex_iterator end(const matrix_storage<Vertice, Edge> &graph) noexcept{
         return graph.end();
     }
+    /*
+    template<typename Vertice, typename Edge>
+    decltype(auto) find_vertice(const matrix_storage<Vertice, Edge> &graph, const Vertice &v){
+        return graph.find_vertice(v);
+    }
+    template<typename Vertice, typename Edge>
+    decltype(auto) find_vertice(matrix_storage<Vertice, Edge> &graph, const Vertice &v){
+        return graph.find_vertice(v);
+    }*/
+
 }
 
 

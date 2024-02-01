@@ -30,6 +30,9 @@ namespace xuna {
         using vertex_iterator = Graph::vertex_iterator;
 
         graph_wrapper()=default;
+        graph_wrapper(const storage_t &graph){
+            m_storage = graph;
+        }
         graph_wrapper(graph_wrapper &g)noexcept = default;
         graph_wrapper(graph_wrapper &&g)noexcept = default;
         graph_wrapper<Graph> &operator=(const graph_wrapper<Graph> &g)=default;
@@ -84,7 +87,9 @@ namespace xuna {
         }
 
         template<typename V>
-        std::vector<std::reference_wrapper<const Vertice>> neighbours(V &&v)const{
+        std::vector<std::pair<
+                std::reference_wrapper<const Vertice>, std::reference_wrapper<const Edge>
+        >> neighbours(V &&v)const{
             return m_storage.neighbours(std::forward<V>(v));
         }
 
