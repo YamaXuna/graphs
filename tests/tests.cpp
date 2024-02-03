@@ -14,12 +14,15 @@ inline void testor(){
 }
 
 int main(){
-    /*
+
     xuna::graph_wrapper<xuna::matrix_storage<int, int>> g;
-    std::cout << "ddd\n";
     testor<xuna::matrix_storage>();
-     */
+     /*
     xuna::adjacency_list<int, std::string> g;
     g.add(12);
-
+    g.add(12, 50, "yuyuko");
+    g.remove(12, 50);
+    g.add(2, 90, "mokou");
+    g.edge(2, 90);
+*/
 }

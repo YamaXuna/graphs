@@ -7,3 +7,5 @@ include_directories(.)
 
 add_executable(graphs
         graph/graph_wrapper.h graph/matrix_storage.h tests/test_utilyty.h graph/common.h graph/graph.h graph/algorithms.h tests/graph_testor.h tests/generic_tests.h tests/tests.cpp graph/adjacency.h)
+
+target_compile_options(graphs PRIVATE -fconcepts-diagnostics-depth=3)

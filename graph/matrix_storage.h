@@ -81,7 +81,7 @@ namespace xuna{
             }
 
             bool operator!=(const vertex_iterator& other) const {
-                return *this != other;
+                return m_it != other.m_it;
             }
         };
 
@@ -210,7 +210,8 @@ namespace xuna{
          * @throws if one vertice isn't present in the matrix
          */
 
-        const edges &edge(const Vertice &source, const Vertice &target)const{
+        std::optional<std::reference_wrapper<const edge_t>>
+            edge(const Vertice &source, const Vertice &target)const{
             auto it = find_vertice(source);
             if(it == cend(m_vertices))
                 throw VerticeDoesNotExistsError(source);
@@ -219,8 +220,9 @@ namespace xuna{
             if(it2 == cend(m_vertices))
                 throw VerticeDoesNotExistsError(target);
             size_t pos_b = it2->second;
-
-            return m_matrix[pos_a][pos_b];
+            if (!m_matrix[pos_a][pos_b].has_value())
+                return std::nullopt;
+            return std::optional{std::cref(*m_matrix[pos_a][pos_b])};
         }
         /**
          * give the neighbours of a vertice

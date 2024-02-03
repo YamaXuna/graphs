@@ -50,7 +50,8 @@ namespace xuna {
     concept elementary_graph = requires(Graph g, typename Graph::vertice_t v, typename Graph::edge_t e){
         g.add(typename Graph::vertice_t{});
         g.add(typename Graph::vertice_t{}, typename Graph::vertice_t{}, typename Graph::edge_t{});
-        {g.edge(typename Graph::vertice_t{}, typename Graph::vertice_t{})} -> std::same_as<const std::optional<typename Graph::edge_t> &>;
+        {g.edge(typename Graph::vertice_t{}, typename Graph::vertice_t{})} ->
+        std::same_as<std::optional<std::reference_wrapper<const typename Graph::edge_t>>>;
         g.remove(typename Graph::vertice_t{});
         g.remove(typename Graph::vertice_t{}, typename Graph::vertice_t{});
     };
@@ -97,5 +98,39 @@ namespace xuna {
             };
         }
     }
+
+    /**
+    *  function from boost
+    * @tparam T
+    * @param seed
+    * @param v
+    */
+    template <class T>
+    inline void hash_combine(std::size_t & seed, const T & v)
+    {
+        std::hash<T> hasher;
+        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    /**
+     * struct to specialize to compute hashes on pairs
+     * @tparam T
+     */
+    template<typename T>
+    struct pair_hash;
+    /**
+     *
+     * @tparam S
+     * @tparam T
+     */
+    template<typename S, typename T> struct pair_hash<std::pair<S, T>>
+    {
+        inline std::size_t operator()(const std::pair<S, T> & v) const
+        {
+            std::size_t seed = 0;
+            hash_combine(seed, v.first);
+            hash_combine(seed, v.second);
+            return seed;
+        }
+    };
 
 }

@@ -35,26 +35,51 @@ namespace xuna {
         }
     };
 
+    /**
+     * unwrap the inner type of a type
+     * each specialization should call () operator recursively to handle intricated wrappers
+     * @tparam T
+     */
     template <typename T>
     struct value_extractor {
         inline T operator()(const T& value) {
             return value;
         }
     };
+    /**
+     *
+     */
     template <typename T>
-    requires is_ptr<T>::value
-    struct value_extractor<T> {
-        inline decltype(auto) operator()(const T& value){
-            return *value;
-        }
-    };
+    inline constexpr value_extractor<T> v_extract_v;
+    /**
+     * helper function to extract the type
+     * @tparam T
+     *
+     * @param value
+     * @return
+     */
     template <typename T>
     inline decltype(auto) v_extract(const T& value) {
         return value_extractor<T>{}(value);
     }
+    //specializations
+    template <typename T>
+    requires is_ptr<T>::value
+    struct value_extractor<T> {
+        inline decltype(auto) operator()(const T& value){
+            return v_extract(*value);
+        }
+    };
+    template<typename T>
+    struct value_extractor<std::reference_wrapper<T>>{
+        inline decltype(auto) operator()(const std::reference_wrapper<T> value){
+            return v_extract(value.get());
+        }
+    };
+
 
     using namespace std::string_literals;
-    template <template <typename, typename> typename Graph>
+    template <template <typename, typename> class Graph>
     class graph_testor {
 
         template<typename Vertice, typename Edge,
